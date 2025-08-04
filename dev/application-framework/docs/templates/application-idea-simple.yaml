@@ -1,0 +1,100 @@
+# =================================================================
+# APPLICATION IDEA - SIMPLE USER INPUT
+# =================================================================
+# Just describe your application idea simply. AI will help expand it.
+# =================================================================
+
+# BASIC APPLICATION IDEA
+application_idea:
+  name: "ShipAdmin"                      # What do you want to call it?
+  basic_description: |
+    I want to create an admin panel for my ecommerce business.
+    I need to manage products, handle orders, and track customers.
+  
+  application_type: "admin_panel"        # admin_panel|website|mobile_app|api|other
+
+# WHAT YOU DO (Your Business)
+your_business:
+  business_type: "ecommerce"             # ecommerce|service|manufacturing|education|logistics|healthcare|other
+  what_you_sell: "products online"      # Simple description
+  current_situation: |
+    I sell products online but manage everything manually.
+    Need a system to organize and automate the business.
+
+# WHAT YOU WANT TO ACHIEVE
+your_goals:
+  main_problem: |
+    Everything is manual and disorganized.
+    Hard to track inventory, orders, and customers.
+  
+  what_you_want: |
+    Organized system where I can:
+    - Add and manage products
+    - Track orders from customers
+    - See business performance
+    - Manage my team's access
+
+# WHO WILL USE IT & WHAT THEY CAN DO
+user_roles_and_capabilities:
+  admin_user:
+    who: "Business owner/manager (1-2 people)"
+    what_they_can_do:
+      - "Add and edit all products"
+      - "Manage all orders and customers"
+      - "View all business reports and analytics"
+      - "Manage staff user accounts"
+      - "Configure system settings"
+    access_level: "Full system access"
+
+  staff_user:
+    who: "Employees (2-3 people)"
+    what_they_can_do:
+      - "Process customer orders"
+      - "Update order status"
+      - "View customer information"
+      - "Add new customers"
+      - "View basic reports"
+    access_level: "Limited access (no admin functions)"
+
+# SIMPLE REQUIREMENTS
+basic_needs:
+  must_have:
+    - "Add/edit products"
+    - "Process orders"
+    - "See customer info"
+    - "Basic reports"
+  
+  would_be_nice:
+    - "Mobile access"
+    - "Email notifications"
+    - "Advanced reports"
+
+# TECHNICAL LEVEL
+technical_info:
+  your_technical_level: "basic"         # basic|intermediate|advanced
+  special_requirements: "none"          # Any specific integrations, APIs, or technical needs?
+  existing_systems: "none"              # Do you have existing systems to integrate?
+
+# BUSINESS COMPLEXITY (Optional - for complex applications)
+business_complexity:
+  user_levels: "single_level"           # single_level|multi_level (company/branch/staff hierarchy)
+  pricing_model: "simple"               # simple|markup|multi_tier_markup|complex
+  data_relationships: "simple"          # simple|moderate|complex
+  integration_needs: "none"             # none|single_api|multiple_apis|enterprise
+
+# SCALE EXPECTATIONS (Optional - helps AI plan architecture)
+scale_expectations:
+  initial_size: "small team (2-5 people)"
+  expected_growth: "gradual growth"
+  daily_activity: "moderate usage"
+  concurrent_users: "2-10 users"
+
+# =================================================================
+# AI INSTRUCTIONS:
+# 1. Read this application idea and understand the context and complexity
+# 2. Pay special attention to user roles and what each can do
+# 3. Ask clarifying questions based on business complexity and user capabilities
+# 4. Generate modules that support the different user roles appropriately
+# 5. Create detailed breakdown based on user feedback
+# 6. Generate individual module requirements
+# ================================================================= 

@@ -1,0 +1,602 @@
+# =================================================================
+# SHIPMENT MODULE - DETAILED SPECIFICATION (MASTER FILE)
+# =================================================================
+# APPLICATION: SHIPCENTRAL SHIPPING MANAGEMENT
+# STAGE 5: DETAILED TECHNICAL SPECIFICATION
+# STATUS: READY FOR CODE GENERATION
+# =================================================================
+
+# This file serves as the MASTER FILE containing:
+# 1. ALL requirement-from-breakdown specifications
+# 2. USER ANSWER ADJUSTMENTS and preferences
+# 3. TECHNICAL IMPLEMENTATION DETAILS
+# 4. INTEGRATION SPECIFICATIONS
+
+# =================================================================
+# MODULE OVERVIEW
+# =================================================================
+module_info:
+  name: "Shipment"
+  laravel_module_name: "Shipment"
+  purpose: "Core shipping operations with 7-step workflow and real-time carrier integration"
+  type: "CREATE NEW"
+  complexity: "High"
+  estimated_development_time: "3-4 weeks"
+  
+application_context:
+  application_name: "ShipCentral"
+  business_domain: "Multi-branch shipping and logistics management"
+  module_role: "Core shipping operations - the heart of the entire application"
+  integration_with: ["User", "Branch", "Customer", "Product", "Shipper", "Audit"]
+
+development_info:
+  priority: "CRITICAL - Phase 3"
+  dependencies: ["User", "Branch", "Customer", "Product", "Shipper"]
+  affects: ["Audit"]
+  phase: "Core Operations Module (Phase 3 - Main Business Logic)"
+
+# =================================================================
+# USER ANSWERS INTEGRATION
+# =================================================================
+user_preferences:
+  workflow_complexity: "Standard 7-step workflow" # q1: answer "a"
+  quote_comparison_features: "Real-time quotes with detailed comparison view" # q2: answer "c"
+  shipment_modification_policy: "Limited modification after creation" # q3: answer "b"
+  tracking_information_display: "Manual tracking updates" # q4: answer "c"
+  bulk_operations_support: "Basic bulk operations for common actions" # q5: answer "b"
+  
+  ui_preferences:
+    shipment_creation_flow: "7-step wizard interface" # q6: answer "c"
+    quote_display_interface: "Detailed comparison table with filtering options" # q7: answer "c"
+    shipment_listing_organization: "Advanced DataTable with multiple filters and views" # q8: answer "d"
+    tracking_status_updates: "Status timeline view with manual updates" # q9: answer "c"
+    document_management_approach: "Simple document storage with basic categorization" # q10: answer "b"
+  
+  technical_preferences:
+    quote_processing_strategy: "Real-time API calls with caching for performance" # q11: answer "b"
+    shipment_search_optimization: "Full-text search with advanced indexing" # q12: answer "c"
+    status_change_tracking: "Database logging with audit trail" # q13: answer "b"
+    carrier_integration_approach: "Direct API integration with error handling" # q14: answer "b"
+    performance_optimization_level: "Advanced optimization with caching and indexing" # q15: answer "c"
+  
+  validation_preferences:
+    shipment_data_validation: "Comprehensive validation with business rules" # q16: answer "c"
+    address_validation_requirements: "Basic format validation with postal code checks" # q17: answer "b"
+    weight_dimension_validation: "Required validation with carrier-specific limits" # q18: answer "c"
+  
+  integration_preferences:
+    customer_module_integration: "Full integration with three-person customer model" # q19: answer "c"
+    product_module_integration: "Product selection with real-time pricing" # q20: answer "b"
+
+# =================================================================
+# 7-STEP WORKFLOW DEFINITION
+# =================================================================
+shipment_workflow:
+  step_1_customer_selection:
+    name: "Customer & Contacts"
+    description: "Select/create customer, sender, and receiver"
+    ui_implementation: "Three-person selection with cascading dropdowns"
+    integration: "Full integration with Customer module"
+    validation: "Required customer, sender, receiver selection"
+    
+  step_2_pickup_delivery:
+    name: "Pickup & Delivery Details"
+    description: "Set pickup and delivery addresses and preferences"
+    ui_implementation: "Address selection with date/time pickers"
+    validation: "Address validation with postal code checks"
+    
+  step_3_package_details:
+    name: "Package Information"
+    description: "Package dimensions, weight, and contents"
+    ui_implementation: "Package form with dimension inputs"
+    validation: "Required validation with carrier-specific limits"
+    
+  step_4_product_selection:
+    name: "Products & Add-ons"
+    description: "Select physical supplies and additional services"
+    ui_implementation: "Product grid with real-time pricing"
+    integration: "Product selection with real-time pricing"
+    
+  step_5_carrier_quotes:
+    name: "Carrier Selection"
+    description: "Get and compare real-time carrier quotes"
+    ui_implementation: "Detailed comparison table with filtering options"
+    integration: "Real-time API calls with caching for performance"
+    
+  step_6_review_confirm:
+    name: "Review & Confirm"
+    description: "Final review of all shipment details"
+    ui_implementation: "Summary view with edit links"
+    validation: "Comprehensive validation with business rules"
+    
+  step_7_payment_booking:
+    name: "Payment & Booking"
+    description: "Process payment and confirm booking"
+    ui_implementation: "Payment processing and booking confirmation"
+    integration: "Direct API integration with carrier booking"
+
+# =================================================================
+# DATABASE SCHEMA
+# =================================================================
+database_schema:
+  shipments:
+    purpose: "Core shipment entity with 7-step workflow tracking"
+    fields:
+      id: "bigint unsigned, auto_increment, primary key"
+      shipment_number: "varchar(100), not null, unique" # Auto-generated
+      branch_id: "bigint unsigned, not null, foreign key to branches.id"
+      customer_id: "bigint unsigned, not null, foreign key to customers.id"
+      sender_id: "bigint unsigned, not null, foreign key to senders.id"
+      receiver_id: "bigint unsigned, not null, foreign key to receivers.id"
+      
+      # Package details
+      package_weight: "decimal(8,3), not null"
+      package_length: "decimal(8,2), not null"
+      package_width: "decimal(8,2), not null"
+      package_height: "decimal(8,2), not null"
+      package_description: "text, not null"
+      package_value: "decimal(10,2), default 0.00"
+      
+      # Pickup details
+      pickup_address_id: "bigint unsigned, not null, foreign key to addresses.id"
+      pickup_date: "date, not null"
+      pickup_time_start: "time, nullable"
+      pickup_time_end: "time, nullable"
+      pickup_instructions: "text, nullable"
+      
+      # Delivery details
+      delivery_date_requested: "date, nullable"
+      delivery_instructions: "text, nullable"
+      
+      # Carrier and pricing
+      selected_carrier_id: "bigint unsigned, nullable, foreign key to carriers.id"
+      carrier_service_type: "varchar(100), nullable"
+      base_price: "decimal(10,2), default 0.00"
+      markup_amount: "decimal(10,2), default 0.00"
+      total_price: "decimal(10,2), default 0.00"
+      
+      # Status and tracking
+      status: "enum('draft', 'quoted', 'confirmed', 'picked_up', 'in_transit', 'delivered', 'cancelled')"
+      carrier_tracking_number: "varchar(200), nullable"
+      
+      # Workflow tracking
+      workflow_step: "tinyint unsigned, default 1" # 1-7 steps
+      workflow_completed_at: "timestamp, nullable"
+      
+      # Timestamps and user tracking
+      created_at: "timestamp"
+      updated_at: "timestamp"
+      created_by: "bigint unsigned, not null, foreign key to users.id"
+      confirmed_by: "bigint unsigned, nullable, foreign key to users.id"
+      confirmed_at: "timestamp, nullable"
+    indexes:
+      - "shipment_number" # Unique business identifier
+      - "branch_id" # Branch isolation
+      - "customer_id" # Customer lookup
+      - "status" # Status filtering
+      - "workflow_step" # Workflow filtering
+      - "created_at" # Date sorting
+      - "carrier_tracking_number" # Tracking lookup
+      - "composite(branch_id, status)" # Branch + status filtering
+    
+  shipment_quotes:
+    purpose: "Real-time carrier quotes with comparison data"
+    fields:
+      id: "bigint unsigned, auto_increment, primary key"
+      shipment_id: "bigint unsigned, not null, foreign key to shipments.id"
+      carrier_id: "bigint unsigned, not null, foreign key to carriers.id"
+      service_type: "varchar(100), not null"
+      base_price: "decimal(10,2), not null"
+      markup_amount: "decimal(10,2), not null"
+      total_price: "decimal(10,2), not null"
+      estimated_delivery_date: "date, nullable"
+      carrier_response: "json, nullable" # Full API response
+      is_selected: "boolean, default false"
+      quoted_at: "timestamp"
+      valid_until: "timestamp, nullable"
+    indexes:
+      - "shipment_id"
+      - "carrier_id"
+      - "is_selected"
+      - "quoted_at"
+    
+  shipment_products:
+    purpose: "Products and add-ons selected for shipment"
+    fields:
+      id: "bigint unsigned, auto_increment, primary key"
+      shipment_id: "bigint unsigned, not null, foreign key to shipments.id"
+      product_id: "bigint unsigned, not null, foreign key to products.id"
+      quantity: "integer, not null, default 1"
+      unit_price: "decimal(8,2), not null"
+      total_price: "decimal(10,2), not null"
+      created_at: "timestamp"
+    indexes:
+      - "shipment_id"
+      - "product_id"
+    
+  shipment_status_history:
+    purpose: "Status change tracking with audit trail"
+    fields:
+      id: "bigint unsigned, auto_increment, primary key"
+      shipment_id: "bigint unsigned, not null, foreign key to shipments.id"
+      from_status: "varchar(50), nullable"
+      to_status: "varchar(50), not null"
+      notes: "text, nullable"
+      tracking_info: "json, nullable" # Manual tracking updates
+      changed_by: "bigint unsigned, not null, foreign key to users.id"
+      changed_at: "timestamp"
+    indexes:
+      - "shipment_id"
+      - "changed_at"
+      - "changed_by"
+    
+  shipment_documents:
+    purpose: "Simple document storage with basic categorization"
+    fields:
+      id: "bigint unsigned, auto_increment, primary key"
+      shipment_id: "bigint unsigned, not null, foreign key to shipments.id"
+      document_type: "enum('label', 'invoice', 'receipt', 'proof_of_delivery', 'other')"
+      filename: "varchar(255), not null"
+      file_path: "varchar(500), not null"
+      file_size: "integer, not null"
+      uploaded_by: "bigint unsigned, not null, foreign key to users.id"
+      uploaded_at: "timestamp"
+    indexes:
+      - "shipment_id"
+      - "document_type"
+      - "uploaded_at"
+
+# =================================================================
+# CONTROLLER ARCHITECTURE
+# =================================================================
+controller_architecture:
+  ShipmentController:
+    purpose: "Main shipment management for branch staff"
+    access_level: "Branch Staff"
+    route_prefix: "shipments"
+    middleware: ["auth", "role:branch_staff", "branch.isolation"]
+    methods:
+      index:
+        description: "List shipments with advanced filtering"
+        ui_implementation: "Advanced DataTable with multiple filters and views"
+        search_optimization: "Full-text search with advanced indexing"
+        filters: ["status", "date_range", "customer", "carrier"]
+      create:
+        description: "Start 7-step shipment creation wizard"
+        ui_implementation: "7-step wizard interface"
+        workflow: "Initialize step 1 of 7-step process"
+      store:
+        description: "Complete shipment creation"
+        validation: "Comprehensive validation with business rules"
+        business_logic: "Generate shipment number, process quotes"
+      show:
+        description: "View shipment details"
+        ui_implementation: "Comprehensive view with status timeline"
+        display: "All shipment data, quotes, status history"
+      edit:
+        description: "Edit shipment (limited modification)"
+        constraints: "Limited modification after creation"
+        validation: "Business rules for modification"
+      update:
+        description: "Update shipment data"
+        audit_trail: "Database logging with audit trail"
+      destroy:
+        description: "Cancel shipment"
+        business_logic: "Cancel with carrier if booked"
+        
+  ShipmentWizardController:
+    purpose: "7-step wizard management"
+    access_level: "Branch Staff"
+    route_prefix: "shipments/wizard"
+    middleware: ["auth", "role:branch_staff", "branch.isolation"]
+    methods:
+      step1:
+        description: "Customer & Contacts selection"
+        ui_implementation: "Three-person selection with cascading dropdowns"
+        integration: "Full integration with Customer module"
+      step2:
+        description: "Pickup & Delivery details"
+        ui_implementation: "Address selection with date/time pickers"
+        validation: "Address validation with postal code checks"
+      step3:
+        description: "Package information"
+        ui_implementation: "Package form with dimension inputs"
+        validation: "Required validation with carrier-specific limits"
+      step4:
+        description: "Products & Add-ons selection"
+        ui_implementation: "Product grid with real-time pricing"
+        integration: "Product selection with real-time pricing"
+      step5:
+        description: "Carrier quotes and selection"
+        ui_implementation: "Detailed comparison table with filtering options"
+        integration: "Real-time API calls with caching for performance"
+      step6:
+        description: "Review & Confirm"
+        ui_implementation: "Summary view with edit links"
+        validation: "Final comprehensive validation"
+      step7:
+        description: "Payment & Booking"
+        ui_implementation: "Payment processing and booking confirmation"
+        integration: "Direct API integration with carrier booking"
+        
+  QuoteController:
+    purpose: "Real-time quote management"
+    access_level: "Branch Staff"
+    route_prefix: "quotes"
+    middleware: ["auth", "role:branch_staff"]
+    methods:
+      getQuotes:
+        description: "Get real-time carrier quotes"
+        integration: "Real-time API calls with caching for performance"
+        comparison: "Real-time quotes with detailed comparison view"
+      compareQuotes:
+        description: "Display quote comparison"
+        ui_implementation: "Detailed comparison table with filtering options"
+      selectQuote:
+        description: "Select carrier quote"
+        business_logic: "Apply branch markup, save selection"
+        
+  TrackingController:
+    purpose: "Tracking and status updates"
+    access_level: "Branch Staff and Admin"
+    route_prefix: "tracking"
+    middleware: ["auth", "role:branch_staff,branch_admin"]
+    methods:
+      show:
+        description: "Display tracking information"
+        ui_implementation: "Status timeline view with manual updates"
+        tracking_display: "Manual tracking updates"
+      updateStatus:
+        description: "Manual status update"
+        implementation: "Manual tracking updates"
+        audit_trail: "Database logging with audit trail"
+      history:
+        description: "Status change history"
+        ui_implementation: "Timeline view with status changes"
+
+# =================================================================
+# SERVICE LAYER
+# =================================================================
+service_architecture:
+  ShipmentService:
+    purpose: "Core shipment business logic"
+    methods:
+      - "createShipment(array $data): Shipment"
+      - "updateShipment(int $id, array $data): Shipment"
+      - "cancelShipment(int $id, string $reason): bool"
+      - "generateShipmentNumber(): string"
+      - "validateShipmentData(array $data): array"
+      - "processWorkflowStep(int $shipmentId, int $step, array $data): bool"
+      
+  QuoteService:
+    purpose: "Quote processing and comparison"
+    methods:
+      - "getQuotesForShipment(int $shipmentId): Collection"
+      - "compareQuotes(Collection $quotes): array"
+      - "selectQuote(int $shipmentId, int $quoteId): bool"
+      - "calculateWithMarkup(float $basePrice, int $branchId, int $carrierId): float"
+      - "cacheQuotes(int $shipmentId, Collection $quotes): bool"
+      
+  TrackingService:
+    purpose: "Tracking and status management"
+    methods:
+      - "updateShipmentStatus(int $shipmentId, string $status, array $data): bool"
+      - "getStatusHistory(int $shipmentId): Collection"
+      - "manualTrackingUpdate(int $shipmentId, array $trackingData): bool"
+      - "getTrackingTimeline(int $shipmentId): array"
+
+# =================================================================
+# MODEL RELATIONSHIPS & BUSINESS LOGIC
+# =================================================================
+models_and_relationships:
+  Shipment:
+    purpose: "Core shipment entity with 7-step workflow"
+    relationships:
+      - "belongsTo(Branch::class)"
+      - "belongsTo(Customer::class)"
+      - "belongsTo(Sender::class)"
+      - "belongsTo(Receiver::class)"
+      - "belongsTo(Address::class, 'pickup_address_id')"
+      - "belongsTo(Carrier::class, 'selected_carrier_id')"
+      - "belongsTo(User::class, 'created_by')"
+      - "belongsTo(User::class, 'confirmed_by')"
+      - "hasMany(ShipmentQuote::class)"
+      - "hasMany(ShipmentProduct::class)"
+      - "hasMany(ShipmentStatusHistory::class)"
+      - "hasMany(ShipmentDocument::class)"
+    business_methods:
+      - "generateShipmentNumber(): string"
+      - "getCurrentWorkflowStep(): int"
+      - "canModify(): bool" # Limited modification logic
+      - "calculateTotalPrice(): float"
+      - "getSelectedQuote(): ?ShipmentQuote"
+      - "getStatusTimeline(): Collection"
+      - "isWorkflowComplete(): bool"
+    scopes:
+      - "scopeByBranch(int $branchId)"
+      - "scopeByStatus(string $status)"
+      - "scopeByWorkflowStep(int $step)"
+      - "scopeToday()"
+      - "scopeThisWeek()"
+      
+  ShipmentQuote:
+    purpose: "Real-time carrier quotes with comparison"
+    relationships:
+      - "belongsTo(Shipment::class)"
+      - "belongsTo(Carrier::class)"
+    business_methods:
+      - "isSelected(): bool"
+      - "isValid(): bool"
+      - "getFormattedPrice(): string"
+      - "getDeliveryDays(): int"
+    scopes:
+      - "scopeSelected()"
+      - "scopeValid()"
+
+# =================================================================
+# VIEW STRUCTURE & UI IMPLEMENTATION
+# =================================================================
+view_structure:
+  main_interface:
+    index:
+      template: "shipment.index"
+      ui_implementation: "Advanced DataTable with multiple filters and views"
+      features: ["full_text_search", "status_filters", "date_filters", "export"]
+      
+  wizard_interface:
+    step1:
+      template: "shipment.wizard.step1"
+      ui_implementation: "Three-person selection with cascading dropdowns"
+      integration: "Customer module integration"
+    step2:
+      template: "shipment.wizard.step2"
+      ui_implementation: "Address selection with date/time pickers"
+      validation: "Address validation with postal code checks"
+    step3:
+      template: "shipment.wizard.step3"
+      ui_implementation: "Package form with dimension inputs"
+      validation: "Weight/dimension validation"
+    step4:
+      template: "shipment.wizard.step4"
+      ui_implementation: "Product grid with real-time pricing"
+      integration: "Product module integration"
+    step5:
+      template: "shipment.wizard.step5"
+      ui_implementation: "Detailed comparison table with filtering options"
+      features: ["quote_comparison", "sorting", "filtering"]
+    step6:
+      template: "shipment.wizard.step6"
+      ui_implementation: "Summary view with edit links"
+      features: ["final_review", "edit_capabilities"]
+    step7:
+      template: "shipment.wizard.step7"
+      ui_implementation: "Payment processing and booking confirmation"
+      features: ["payment_processing", "booking_confirmation"]
+      
+  tracking_interface:
+    show:
+      template: "shipment.tracking.show"
+      ui_implementation: "Status timeline view with manual updates"
+      features: ["timeline", "manual_updates", "document_management"]
+
+# =================================================================
+# ROUTING STRUCTURE
+# =================================================================
+routing_structure:
+  main_routes:
+    prefix: ""
+    middleware: ["auth", "role:branch_staff", "branch.isolation"]
+    routes:
+      - "Route::resource('shipments', 'ShipmentController')"
+      - "Route::get('shipments/{id}/tracking', 'TrackingController@show')"
+      
+  wizard_routes:
+    prefix: "shipments/wizard"
+    middleware: ["auth", "role:branch_staff", "branch.isolation"]
+    routes:
+      - "Route::get('step/{step}', 'ShipmentWizardController@show')"
+      - "Route::post('step/{step}', 'ShipmentWizardController@process')"
+      
+  api_routes:
+    prefix: "api"
+    middleware: ["auth:api"]
+    routes:
+      - "Route::get('quotes/{shipment}', 'QuoteController@getQuotes')"
+      - "Route::post('quotes/{shipment}/select', 'QuoteController@selectQuote')"
+
+# =================================================================
+# INTEGRATION FEATURES
+# =================================================================
+integration_specifications:
+  customer_module_integration:
+    implementation: "Full integration with three-person customer model"
+    workflow: "Step 1 uses Customer → Sender → Receiver selection"
+    ui_integration: "Cascading dropdowns with autocomplete"
+    
+  product_module_integration:
+    implementation: "Product selection with real-time pricing"
+    workflow: "Step 4 integrates product catalog"
+    pricing: "Real-time price calculation with branch markup"
+    
+  shipper_module_integration:
+    implementation: "Real-time API calls with caching for performance"
+    workflow: "Step 5 gets real-time carrier quotes"
+    comparison: "Detailed quote comparison with filtering"
+    
+  branch_module_integration:
+    implementation: "Branch isolation and markup application"
+    isolation: "All shipments scoped to user's branch"
+    markup: "Automatic markup application on quotes"
+
+# =================================================================
+# FILE STRUCTURE
+# =================================================================
+file_structure:
+  controllers:
+    - "Http/Controllers/ShipmentController.php"
+    - "Http/Controllers/ShipmentWizardController.php"
+    - "Http/Controllers/QuoteController.php"
+    - "Http/Controllers/TrackingController.php"
+    
+  services:
+    - "Services/ShipmentService.php"
+    - "Services/QuoteService.php"
+    - "Services/TrackingService.php"
+    
+  models:
+    - "Entities/Shipment.php"
+    - "Entities/ShipmentQuote.php"
+    - "Entities/ShipmentProduct.php"
+    - "Entities/ShipmentStatusHistory.php"
+    - "Entities/ShipmentDocument.php"
+    
+  views:
+    main:
+      - "Resources/views/shipments/index.blade.php"
+      - "Resources/views/shipments/show.blade.php"
+    wizard:
+      - "Resources/views/shipments/wizard/step1.blade.php"
+      - "Resources/views/shipments/wizard/step2.blade.php"
+      - "Resources/views/shipments/wizard/step3.blade.php"
+      - "Resources/views/shipments/wizard/step4.blade.php"
+      - "Resources/views/shipments/wizard/step5.blade.php"
+      - "Resources/views/shipments/wizard/step6.blade.php"
+      - "Resources/views/shipments/wizard/step7.blade.php"
+    tracking:
+      - "Resources/views/tracking/show.blade.php"
+      
+  migrations:
+    - "Database/Migrations/xxxx_create_shipments_table.php"
+    - "Database/Migrations/xxxx_create_shipment_quotes_table.php"
+    - "Database/Migrations/xxxx_create_shipment_products_table.php"
+    - "Database/Migrations/xxxx_create_shipment_status_history_table.php"
+    - "Database/Migrations/xxxx_create_shipment_documents_table.php"
+
+# =================================================================
+# SPECIFICATION SUMMARY
+# =================================================================
+specification_summary:
+  total_controllers: 4
+  total_services: 3
+  total_models: 5
+  total_views: 11
+  
+  key_features:
+    - "7-step wizard workflow"
+    - "Real-time carrier quotes with comparison"
+    - "Full Customer module integration"
+    - "Product selection with pricing"
+    - "Advanced search and filtering"
+    - "Status tracking with timeline"
+    - "Document management"
+    - "Comprehensive audit trail"
+
+# =================================================================
+# STATUS: READY FOR CODE GENERATION
+# =================================================================
+generation_readiness:
+  requirements_complete: true
+  user_answers_integrated: true
+  technical_details_specified: true
+  architecture_defined: true
+  ready_for_stage_6: true

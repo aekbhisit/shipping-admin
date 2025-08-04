@@ -1,0 +1,30 @@
+{
+    "private": true,
+    "scripts": {
+        "dev": "npm run development",
+        "development": "mix",
+        "watch": "mix watch",
+        "watch-poll": "mix watch -- --watch-options-poll=1000",
+        "hot": "mix watch --hot",
+        "prod": "npm run production",
+        "production": "mix --production"
+    },
+    "devDependencies": {
+        "axios": "^0.21",
+        "browser-sync": "^2.26.14",
+        "browser-sync-webpack-plugin": "^2.2.2",
+        "cross-env": "^7.0.3",
+        "laravel-mix": "^6.0.29",
+        "laravel-mix-merge-manifest": "^2.1.0",
+        "lodash": "^4.17.19",
+        "postcss": "^8.3.6",
+        "resolve-url-loader": "^4.0.0",
+        "sass": "^1.32.8",
+        "sass-loader": "^10.1.1"
+    },
+    "dependencies": {
+        "inputmask": "^5.0.5",
+        "jquery": "^3.6.0",
+        "selectize": "^0.12.6"
+    }
+}

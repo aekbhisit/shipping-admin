@@ -1,0 +1,586 @@
+# =================================================================
+# CUSTOMER MODULE - DETAILED SPECIFICATION (MASTER FILE)
+# =================================================================
+# APPLICATION: SHIPCENTRAL SHIPPING MANAGEMENT
+# STAGE 5: DETAILED TECHNICAL SPECIFICATION
+# STATUS: READY FOR CODE GENERATION
+# =================================================================
+
+# This file serves as the MASTER FILE containing:
+# 1. ALL requirement-from-breakdown specifications
+# 2. USER ANSWER ADJUSTMENTS and preferences
+# 3. TECHNICAL IMPLEMENTATION DETAILS
+# 4. INTEGRATION SPECIFICATIONS
+
+# =================================================================
+# MODULE OVERVIEW
+# =================================================================
+module_info:
+  name: "Customer"
+  laravel_module_name: "Customer"
+  purpose: "Centralized customer management with three-person model and cross-branch sharing"
+  type: "CREATE NEW"
+  complexity: "Medium-High"
+  estimated_development_time: "2-3 weeks"
+  
+application_context:
+  application_name: "ShipCentral"
+  business_domain: "Multi-branch shipping and logistics management"
+  module_role: "Handle centralized customer database with Customer → Sender → Receiver relationships"
+  integration_with: ["User", "Branch", "Shipment"]
+
+development_info:
+  priority: "HIGH - Phase 2"
+  dependencies: ["User", "Branch"]
+  affects: ["Shipment"]
+  phase: "Business Core Modules (Phase 2 - Main Business Logic)"
+
+# =================================================================
+# USER ANSWERS INTEGRATION
+# =================================================================
+# Based on user answers to 20 questions, these decisions have been made:
+
+user_preferences:
+  customer_uniqueness: "Unique by customer code (auto-generated UUID)" # q1: answer "c by use uuid"
+  sender_address_limit: "No limit - unlimited addresses per sender" # q2: answer "a"
+  customer_branch_association: "Customers belong to all branches (fully shared)" # q3: answer "a"
+  duplicate_customer_handling: "Fuzzy matching on name and phone/email" # q4: answer "b"
+  customer_history_scope: "Basic shipment history only" # q5: answer "a"
+  
+  ui_preferences:
+    customer_search_interface: "Simple search box with basic filters" # q6: answer "a"
+    three_person_selection_ui: "Single form with cascading dropdowns using select with auto complete" # q7: answer "b by dropdown using select with auto complete"
+    address_management_ui: "Address book style with favorites" # q8: answer "b"
+    customer_profile_layout: "Tabbed interface (Info/Senders/Receivers/History)" # q9: answer "b"
+    quick_add_functionality: "Quick add with minimal required fields" # q10: answer "b"
+  
+  technical_preferences:
+    search_performance_optimization: "Basic database indexes on search fields" # q11: answer "a"
+    autocomplete_implementation: "Using select2 with auto complete" # q12: answer "a by using select2 with auto complete"
+    address_storage_strategy: "Separate addresses table with foreign keys" # q13: answer "a"
+    customer_code_generation: "UUID-based codes for uniqueness" # q14: derived from q1
+    three_person_model_implementation: "Normalized separate tables" # q15: answer "a"
+  
+  validation_preferences:
+    customer_data_validation: "Basic validation with required fields" # q16: answer "a"
+    address_validation: "Simple format validation" # q17: answer "a"
+    duplicate_prevention: "Basic duplicate detection during creation" # q18: answer "a"
+  
+  integration_preferences:
+    shipment_integration: "Direct database relationships" # q19: answer "a"
+    cross_branch_access: "Full cross-branch customer sharing" # q20: answer "a"
+
+# =================================================================
+# DATABASE SCHEMA (Three-person model + user preferences)
+# =================================================================
+database_schema:
+  customers:
+    purpose: "Top-level customer entity with UUID uniqueness"
+    fields:
+      id: "bigint unsigned, auto_increment, primary key"
+      uuid: "char(36), not null, unique" # UUID for customer code
+      customer_code: "varchar(50), not null, unique" # Generated from UUID
+      customer_type: "enum('individual', 'business'), not null"
+      company_name: "varchar(255), nullable" # For business customers
+      individual_name: "varchar(255), nullable" # For individual customers
+      tax_id: "varchar(50), nullable"
+      phone: "varchar(20), not null"
+      email: "varchar(255), nullable"
+      notes: "text, nullable"
+      is_active: "boolean, default true, index"
+      created_at: "timestamp"
+      updated_at: "timestamp"
+      created_by_branch: "bigint unsigned, not null, foreign key to branches.id"
+      created_by_user: "bigint unsigned, not null, foreign key to users.id"
+    indexes:
+      - "uuid" # Unique identifier
+      - "customer_code" # Business identifier
+      - "phone" # For fuzzy matching
+      - "email" # For fuzzy matching
+      - "customer_type"
+      - "is_active"
+      - "created_by_branch"
+    
+  senders:
+    purpose: "Sender details with multiple addresses (unlimited per user preference)"
+    fields:
+      id: "bigint unsigned, auto_increment, primary key"
+      customer_id: "bigint unsigned, not null, foreign key to customers.id"
+      sender_name: "varchar(255), not null"
+      sender_phone: "varchar(20), not null"
+      sender_email: "varchar(255), nullable"
+      default_address_id: "bigint unsigned, nullable" # FK to addresses
+      preferences: "json, nullable" # Sender-specific preferences
+      is_active: "boolean, default true"
+      created_at: "timestamp"
+      updated_at: "timestamp"
+    indexes:
+      - "customer_id"
+      - "sender_phone" # For search
+      - "is_active"
+    
+  addresses:
+    purpose: "Separate addresses table with foreign keys (user preference)"
+    fields:
+      id: "bigint unsigned, auto_increment, primary key"
+      sender_id: "bigint unsigned, not null, foreign key to senders.id"
+      address_type: "enum('pickup', 'delivery'), default 'pickup'"
+      address_line_1: "varchar(255), not null"
+      address_line_2: "varchar(255), nullable"
+      district: "varchar(100), not null"
+      province: "varchar(100), not null"
+      postal_code: "varchar(10), not null"
+      country: "varchar(100), default 'Thailand'"
+      latitude: "decimal(10, 8), nullable"
+      longitude: "decimal(11, 8), nullable"
+      is_default: "boolean, default false"
+      is_favorite: "boolean, default false" # Address book style with favorites
+      created_at: "timestamp"
+      updated_at: "timestamp"
+    indexes:
+      - "sender_id"
+      - "postal_code"
+      - "province"
+      - "is_default"
+      - "is_favorite"
+    
+  receivers:
+    purpose: "Receiver information for shipments"
+    fields:
+      id: "bigint unsigned, auto_increment, primary key"
+      receiver_name: "varchar(255), not null"
+      receiver_phone: "varchar(20), not null"
+      receiver_email: "varchar(255), nullable"
+      delivery_address_line_1: "varchar(255), not null"
+      delivery_address_line_2: "varchar(255), nullable"
+      delivery_district: "varchar(100), not null"
+      delivery_province: "varchar(100), not null"
+      delivery_postal_code: "varchar(10), not null"
+      delivery_country: "varchar(100), default 'Thailand'"
+      delivery_instructions: "text, nullable"
+      is_frequent: "boolean, default false" # For frequent receivers
+      created_at: "timestamp"
+      updated_at: "timestamp"
+    indexes:
+      - "receiver_phone" # For search
+      - "delivery_postal_code"
+      - "delivery_province"
+      - "is_frequent"
+
+# =================================================================
+# CONTROLLER ARCHITECTURE (4 controllers from breakdown)
+# =================================================================
+controller_architecture:
+  CustomerAdminController:
+    purpose: "Branch admin manages customers with cross-branch access"
+    access_level: "Branch Admin"
+    route_prefix: "admin/customers"
+    middleware: ["auth", "role:branch_admin"]
+    cross_branch_access: "Full cross-branch customer sharing"
+    methods:
+      index:
+        description: "List customers with simple search and basic filters"
+        ui_implementation: "Simple search box with basic filters"
+        search_optimization: "Basic database indexes on search fields"
+        cross_branch: "Access all customers regardless of creating branch"
+      create:
+        description: "Add new customer"
+        ui_implementation: "Customer creation form with UUID generation"
+        uniqueness: "Auto-generate UUID-based customer code"
+        validation: "Basic validation with required fields"
+      store:
+        description: "Save new customer"
+        duplicate_handling: "Fuzzy matching on name and phone/email"
+        business_logic: "Generate UUID and customer code"
+      show:
+        description: "View customer details with tabbed interface"
+        ui_implementation: "Tabbed interface (Info/Senders/Receivers/History)"
+        history_scope: "Basic shipment history only"
+      edit:
+        description: "Edit customer information"
+        validation: "Basic validation with required fields"
+      update:
+        description: "Update customer data"
+        audit_trail: "Log changes for compliance"
+      destroy:
+        description: "Deactivate customer (soft delete)"
+        implementation: "Mark as inactive, preserve data"
+      search:
+        description: "AJAX customer search"
+        implementation: "Simple search with basic filters"
+        optimization: "Basic database indexes on search fields"
+        
+  CustomerController:
+    purpose: "Branch staff customer lookup and selection for shipments"
+    access_level: "Branch Staff"
+    route_prefix: "staff/customers"
+    middleware: ["auth", "role:branch_staff"]
+    methods:
+      search:
+        description: "Quick customer search for shipments"
+        ui_implementation: "Select2 with auto complete"
+        performance: "Basic database indexes on search fields"
+      autocomplete:
+        description: "AJAX autocomplete for forms"
+        implementation: "Using select2 with auto complete"
+        optimization: "Basic database indexes"
+      select:
+        description: "Select customer for shipment"
+        ui_implementation: "Single form with cascading dropdowns"
+        workflow: "Customer → Sender → Receiver selection"
+      quickAdd:
+        description: "Quick customer creation during shipment"
+        ui_implementation: "Quick add with minimal required fields"
+        validation: "Basic validation with required fields"
+      recent:
+        description: "Recent customers list"
+        optimization: "Recent customers for quick access"
+        
+  SenderController:
+    purpose: "Sender information management with unlimited addresses"
+    access_level: "Branch Staff and Admin"
+    route_prefix: "admin/senders"
+    middleware: ["auth", "role:branch_admin,branch_staff"]
+    methods:
+      index:
+        description: "List senders for customer"
+        scope: "Senders belonging to specific customer"
+      create:
+        description: "Add new sender to customer"
+        address_limit: "No limit - unlimited addresses per sender"
+      store:
+        description: "Save sender information"
+        validation: "Basic validation with required fields"
+      show:
+        description: "View sender details with address book"
+        ui_implementation: "Address book style with favorites"
+      edit:
+        description: "Edit sender information"
+        constraints: "Cannot change customer association"
+      update:
+        description: "Update sender data"
+        audit_trail: "Log changes"
+      addAddress:
+        description: "Add new address to sender"
+        storage_strategy: "Separate addresses table with foreign keys"
+        ui_implementation: "Address book style with favorites"
+      selectAddress:
+        description: "Select default address"
+        business_logic: "Set as default pickup address"
+        
+  ReceiverController:
+    purpose: "Receiver information management"
+    access_level: "Branch Staff and Admin"
+    route_prefix: "admin/receivers"
+    middleware: ["auth", "role:branch_admin,branch_staff"]
+    methods:
+      search:
+        description: "Search receivers for shipment selection"
+        optimization: "Basic database indexes on phone and postal code"
+      create:
+        description: "Add new receiver"
+        validation: "Simple format validation"
+      store:
+        description: "Save receiver information"
+        validation: "Basic validation with required fields"
+      show:
+        description: "View receiver details"
+        display: "Contact info and delivery address"
+      edit:
+        description: "Edit receiver information"
+        validation: "Simple format validation"
+      update:
+        description: "Update receiver data"
+        audit_trail: "Log changes"
+      frequent:
+        description: "Mark/unmark as frequent receiver"
+        business_logic: "Toggle frequent receiver flag"
+
+# =================================================================
+# REPOSITORY PATTERN
+# =================================================================
+repository_architecture:
+  CustomerRepositoryInterface:
+    purpose: "Customer data access with cross-branch support"
+    methods:
+      # Basic CRUD
+      - "findById(int $id): Customer"
+      - "findByUuid(string $uuid): ?Customer"
+      - "findByCustomerCode(string $code): ?Customer"
+      - "create(array $data): Customer"
+      - "update(int $id, array $data): Customer"
+      - "delete(int $id): bool"
+      
+      # Search and filtering (cross-branch)
+      - "searchCustomers(string $query): Collection"
+      - "findByPhone(string $phone): Collection"
+      - "findByEmail(string $email): Collection"
+      - "getCustomersWithPagination(array $filters): LengthAwarePaginator"
+      - "getRecentCustomers(int $limit = 10): Collection"
+      
+      # Duplicate detection
+      - "findPotentialDuplicates(array $data): Collection"
+      - "fuzzyMatchByNameAndContact(string $name, string $contact): Collection"
+      
+      # Three-person model support
+      - "getCustomerWithSenders(int $customerId): Customer"
+      - "getCustomerWithHistory(int $customerId): Customer"
+      
+  AddressRepositoryInterface:
+    purpose: "Address management with unlimited storage"
+    methods:
+      - "findBySender(int $senderId): Collection"
+      - "getFavoriteAddresses(int $senderId): Collection"
+      - "setDefaultAddress(int $senderId, int $addressId): bool"
+      - "toggleFavorite(int $addressId): bool"
+
+# =================================================================
+# MODEL RELATIONSHIPS & BUSINESS LOGIC
+# =================================================================
+models_and_relationships:
+  Customer:
+    purpose: "Top-level customer entity with UUID uniqueness"
+    relationships:
+      - "hasMany(Sender::class)"
+      - "hasMany(Shipment::class)"
+      - "belongsTo(Branch::class, 'created_by_branch')"
+      - "belongsTo(User::class, 'created_by_user')"
+    business_methods:
+      - "generateCustomerCode(): string" # Generate from UUID
+      - "getSenders(): Collection"
+      - "getShipmentHistory(): Collection"
+      - "findPotentialDuplicates(): Collection"
+      - "isActive(): bool"
+    scopes:
+      - "scopeActive()"
+      - "scopeByType(string $type)"
+      - "scopeSearch(string $query)"
+      
+  Sender:
+    purpose: "Sender with unlimited addresses"
+    relationships:
+      - "belongsTo(Customer::class)"
+      - "hasMany(Address::class)" # Unlimited addresses
+      - "belongsTo(Address::class, 'default_address_id')"
+      - "hasMany(Shipment::class)"
+    business_methods:
+      - "getDefaultAddress(): ?Address"
+      - "getFavoriteAddresses(): Collection"
+      - "setDefaultAddress(int $addressId): bool"
+      - "addAddress(array $addressData): Address"
+      
+  Address:
+    purpose: "Separate addresses table with favorites"
+    relationships:
+      - "belongsTo(Sender::class)"
+      - "hasMany(Shipment::class)"
+    business_methods:
+      - "setAsFavorite(): bool"
+      - "setAsDefault(): bool"
+      - "getFullAddress(): string"
+    scopes:
+      - "scopeFavorites()"
+      - "scopeDefaults()"
+      
+  Receiver:
+    purpose: "Simple receiver model"
+    relationships:
+      - "hasMany(Shipment::class)"
+    business_methods:
+      - "getFullDeliveryAddress(): string"
+      - "markAsFrequent(): bool"
+    scopes:
+      - "scopeFrequent()"
+
+# =================================================================
+# SERVICE LAYER
+# =================================================================
+service_architecture:
+  CustomerService:
+    purpose: "Customer business logic and duplicate handling"
+    methods:
+      - "createCustomer(array $data): Customer"
+      - "findPotentialDuplicates(array $customerData): Collection"
+      - "fuzzyMatchCustomers(string $name, string $contact): Collection"
+      - "generateUniqueCustomerCode(): string"
+      - "getCustomerHistory(int $customerId): array"
+      
+  AddressService:
+    purpose: "Address management with favorites"
+    methods:
+      - "addAddressToSender(int $senderId, array $addressData): Address"
+      - "setFavoriteAddress(int $addressId): bool"
+      - "setDefaultAddress(int $senderId, int $addressId): bool"
+      - "getAddressBook(int $senderId): Collection"
+
+# =================================================================
+# VIEW STRUCTURE & UI IMPLEMENTATION
+# =================================================================
+view_structure:
+  admin_layout:
+    base_template: "layouts.admin"
+    navigation: "Customer management menu"
+    
+  customer_management:
+    index:
+      template: "customer.admin.index"
+      ui_implementation: "Simple search box with basic filters"
+      features: ["search", "filter_by_type", "pagination"]
+      search_integration: "Select2 with autocomplete"
+      
+    create:
+      template: "customer.admin.create"
+      ui_implementation: "Customer creation form with validation"
+      duplicate_check: "Real-time fuzzy matching"
+      
+    show:
+      template: "customer.admin.show"
+      ui_implementation: "Tabbed interface (Info/Senders/Receivers/History)"
+      tabs:
+        - "Customer Information"
+        - "Senders & Addresses"
+        - "Receivers"
+        - "Shipment History"
+        
+    senders:
+      template: "customer.admin.senders"
+      ui_implementation: "Address book style with favorites"
+      features: ["unlimited_addresses", "favorites", "default_selection"]
+      
+  staff_interface:
+    search:
+      template: "customer.staff.search"
+      ui_implementation: "Select2 with auto complete"
+      workflow: "Single form with cascading dropdowns"
+      
+    quick_add:
+      template: "customer.staff.quick_add"
+      ui_implementation: "Quick add with minimal required fields"
+      validation: "Basic validation only"
+
+# =================================================================
+# ROUTING STRUCTURE
+# =================================================================
+routing_structure:
+  admin_routes: # routes/admin.php
+    prefix: "admin"
+    middleware: ["auth", "role:branch_admin"]
+    routes:
+      - "Route::resource('customers', 'CustomerAdminController')"
+      - "Route::get('customers/{id}/senders', 'SenderController@index')"
+      - "Route::resource('senders', 'SenderController')"
+      - "Route::resource('receivers', 'ReceiverController')"
+      
+  staff_routes: # routes/staff.php
+    prefix: "staff"
+    middleware: ["auth", "role:branch_staff"]
+    routes:
+      - "Route::get('customers/search', 'CustomerController@search')"
+      - "Route::get('customers/autocomplete', 'CustomerController@autocomplete')"
+      - "Route::post('customers/quick-add', 'CustomerController@quickAdd')"
+      
+  api_routes: # routes/api.php
+    prefix: "api"
+    middleware: ["auth:api"]
+    routes:
+      - "Route::get('customers/search', 'CustomerController@search')"
+      - "Route::get('senders/{id}/addresses', 'SenderController@addresses')"
+
+# =================================================================
+# INTEGRATION FEATURES
+# =================================================================
+integration_specifications:
+  cross_branch_sharing:
+    implementation: "Full cross-branch customer sharing"
+    access_control: "All branches can access all customers"
+    data_consistency: "Single customer database"
+    
+  shipment_integration:
+    implementation: "Direct database relationships"
+    three_person_workflow: "Customer → Sender → Receiver selection"
+    ui_integration: "Single form with cascading dropdowns using select2"
+    
+  branch_integration:
+    relationship: "Customers created by branch, but shared globally"
+    tracking: "Track which branch created customer for analytics"
+
+# =================================================================
+# FILE STRUCTURE
+# =================================================================
+file_structure:
+  controllers:
+    - "Http/Controllers/CustomerAdminController.php"
+    - "Http/Controllers/CustomerController.php"
+    - "Http/Controllers/SenderController.php"
+    - "Http/Controllers/ReceiverController.php"
+    
+  repositories:
+    - "Repositories/Contracts/CustomerRepositoryInterface.php"
+    - "Repositories/Eloquent/CustomerRepository.php"
+    - "Repositories/Contracts/AddressRepositoryInterface.php"
+    - "Repositories/Eloquent/AddressRepository.php"
+    
+  models:
+    - "Entities/Customer.php"
+    - "Entities/Sender.php"
+    - "Entities/Address.php"
+    - "Entities/Receiver.php"
+    
+  services:
+    - "Services/CustomerService.php"
+    - "Services/AddressService.php"
+    
+  views:
+    admin:
+      - "Resources/views/admin/customers/index.blade.php"
+      - "Resources/views/admin/customers/create.blade.php"
+      - "Resources/views/admin/customers/edit.blade.php"
+      - "Resources/views/admin/customers/show.blade.php"
+      - "Resources/views/admin/senders/index.blade.php"
+      - "Resources/views/admin/senders/create.blade.php"
+      - "Resources/views/admin/receivers/index.blade.php"
+    staff:
+      - "Resources/views/staff/customers/search.blade.php"
+      - "Resources/views/staff/customers/quick_add.blade.php"
+      
+  routes:
+    - "Routes/admin.php"
+    - "Routes/staff.php"
+    - "Routes/api.php"
+    
+  migrations:
+    - "Database/Migrations/xxxx_create_customers_table.php"
+    - "Database/Migrations/xxxx_create_senders_table.php"
+    - "Database/Migrations/xxxx_create_addresses_table.php"
+    - "Database/Migrations/xxxx_create_receivers_table.php"
+
+# =================================================================
+# SPECIFICATION SUMMARY
+# =================================================================
+specification_summary:
+  total_controllers: 4
+  total_models: 4
+  total_repositories: 2
+  total_services: 2
+  total_views: 11
+  total_routes: 3 files
+  
+  key_features:
+    - "Three-person model: Customer → Sender → Receiver"
+    - "UUID-based customer uniqueness"
+    - "Unlimited addresses per sender"
+    - "Cross-branch customer sharing"
+    - "Address book with favorites"
+    - "Select2 autocomplete integration"
+    - "Fuzzy duplicate detection"
+    - "Tabbed customer profile interface"
+
+# =================================================================
+# STATUS: READY FOR CODE GENERATION
+# =================================================================
+generation_readiness:
+  requirements_complete: true
+  user_answers_integrated: true
+  technical_details_specified: true
+  architecture_defined: true
+  ready_for_stage_6: true

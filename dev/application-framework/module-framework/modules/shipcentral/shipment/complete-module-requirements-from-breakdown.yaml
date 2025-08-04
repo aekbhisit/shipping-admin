@@ -1,0 +1,311 @@
+# =================================================================
+# SHIPMENT MODULE REQUIREMENTS - FROM MODULE BREAKDOWN
+# =================================================================
+# Generated from 07-module-breakdown-planning.yaml using improved template
+# STATUS: COMPLETE DATA TRANSFER FROM BREAKDOWN
+# =================================================================
+
+# BASIC MODULE INFO (from module breakdown)
+module_folder: "Shipment"
+output_organization: true
+application_name: "ShipCentral"
+module_type: "CREATE NEW"
+
+# APPLICATION CONTEXT (transfer from breakdown)
+application_context:
+  application_name: "ShipCentral"
+  business_domain: "Multi-branch shipping and logistics management"
+  module_role: "Handle complete shipment creation process from customer selection to payment confirmation"
+  integration_with: ["User", "Branch", "Customer", "Shipper", "Audit"]
+  technology_stack:
+    framework: "Laravel 8.12"
+    frontend: "Blade + jQuery with progressive forms"
+    database: "MariaDB with branch isolation"
+    ui: "Bootstrap 5 with step-by-step wizard"
+    architecture: "Modular (nwidart/laravel-modules)"
+
+# TRANSFER COMPLETE MODULE BREAKDOWN DATA
+module_breakdown_transfer:
+  # COPIED EXACTLY from 07-module-breakdown-planning.yaml
+  core_features: |
+    - 7-step shipment creation workflow
+    - Single-page progressive form with session storage
+    - Real-time quote integration
+    - Package details and service selection
+    - Branch-isolated shipment management
+  
+  controllers_needed: |
+    - ShipmentController: Branch staff creates shipments
+    - QuoteController: Real-time quote generation
+    - PrintController: Label printing functionality
+    - TrackingController: Shipment tracking and status
+    
+  models_needed: |
+    - Shipment: Main shipment record
+    - Package: Package details (weight, dimensions)
+    - ShipmentStatus: Status tracking and history
+    - ShipmentRate: Applied rates and markups
+    
+  workflow_steps: |
+    step_1: Customer Selection/Creation
+    step_2: Sender Information
+    step_3: Receiver Information
+    step_4: Package Details (weight, dimensions)
+    step_5: Service Selection (express, standard)
+    step_6: Rate Comparison & Selection
+    step_7: Payment & Confirmation
+    
+  business_purpose: |
+    Handle complete shipment creation process from customer selection to payment confirmation
+    
+# USER REQUIREMENT (enhanced with breakdown data)
+user_requirement: |
+  Create comprehensive Shipment module for ShipCentral's core shipping operations based on module breakdown specifications.
+  
+  **Business Context:** 
+  Handle complete shipment creation process from customer selection to payment confirmation with 7-step workflow.
+  
+  **Core Features:**
+  - 7-step shipment creation workflow
+  - Single-page progressive form with session storage
+  - Real-time quote integration
+  - Package details and service selection
+  - Branch-isolated shipment management
+  
+  **Controllers Required:**
+  - ShipmentController: Branch staff creates shipments
+  - QuoteController: Real-time quote generation
+  - PrintController: Label printing functionality
+  - TrackingController: Shipment tracking and status
+  
+  **Models Required:**
+  - Shipment: Main shipment record
+  - Package: Package details (weight, dimensions)
+  - ShipmentStatus: Status tracking and history
+  - ShipmentRate: Applied rates and markups
+  
+  **Workflow Steps:**
+  1. Customer Selection/Creation
+  2. Sender Information
+  3. Receiver Information
+  4. Package Details (weight, dimensions)
+  5. Service Selection (express, standard)
+  6. Rate Comparison & Selection
+  7. Payment & Confirmation
+  
+  **Integration Requirements:**
+  - Depends on: User, Branch, Customer, Shipper
+  - Affects: Audit
+
+# TECHNICAL PREFERENCES (from Step 6)
+technical_preferences:
+  framework: "Laravel 8.12"
+  frontend: "Blade + jQuery with progressive forms"
+  database: "MariaDB with branch isolation"
+  architecture: "Repository pattern"
+
+# CONTROLLER PATTERN (from breakdown)
+controller_pattern: "ShipmentController"
+
+# DEVELOPMENT INFO (from breakdown)
+development_info:
+  priority: "HIGH - Phase 2"
+  development_estimate: "3-4 weeks"
+  dependencies: ["User", "Branch", "Customer", "Shipper"]
+  affects: ["Audit"]
+  phase: "Business Core Modules (Phase 2 - Main Business Logic)"
+
+# =================================================================
+# DETAILED CONTROLLER SPECIFICATIONS
+# =================================================================
+# Based on module breakdown, these controllers MUST be generated:
+
+controller_specifications:
+  ShipmentController:
+    purpose: "Branch staff creates and manages shipments"
+    access_level: "Branch Staff and Admin"
+    methods_required:
+      - "index(): List shipments for current branch"
+      - "create(): Start 7-step shipment creation"
+      - "store(): Save completed shipment"
+      - "show(): View shipment details"
+      - "edit(): Edit shipment (if allowed)"
+      - "update(): Update shipment data"
+      - "cancel(): Cancel shipment"
+      - "saveStep(): Save individual step data to session"
+      - "nextStep(): Proceed to next workflow step"
+      - "previousStep(): Go back to previous step"
+      
+  QuoteController:
+    purpose: "Real-time quote generation during shipment creation"
+    access_level: "Internal API for shipment workflow"
+    methods_required:
+      - "generate(): Generate quotes for current package"
+      - "compare(): Display quote comparison"
+      - "select(): Select carrier and quote"
+      - "refresh(): Refresh quotes from carriers"
+      - "applyMarkup(): Apply branch markup to quotes"
+      
+  PrintController:
+    purpose: "Label printing functionality for completed shipments"
+    access_level: "Branch Staff and Admin"
+    methods_required:
+      - "label(): Print shipping label"
+      - "receipt(): Print shipment receipt"
+      - "manifest(): Print shipping manifest"
+      - "bulk(): Bulk print multiple labels"
+      - "reprint(): Reprint existing labels"
+      
+  TrackingController:
+    purpose: "Shipment tracking and status management"
+    access_level: "Branch Staff and Admin"
+    methods_required:
+      - "show(): Display tracking information"
+      - "update(): Update shipment status"
+      - "history(): Show status history"
+      - "bulk(): Bulk status updates"
+      - "notify(): Send tracking notifications"
+
+# =================================================================
+# DETAILED MODEL SPECIFICATIONS
+# =================================================================
+# Based on module breakdown, these models MUST be generated:
+
+model_specifications:
+  Shipment:
+    purpose: "Main shipment record with branch isolation"
+    relationships:
+      - "belongsTo Branch"
+      - "belongsTo Customer"
+      - "belongsTo Sender"
+      - "belongsTo Receiver"
+      - "hasMany Package"
+      - "hasMany ShipmentStatus"
+      - "hasOne ShipmentRate"
+      - "belongsTo User (created_by)"
+      
+  Package:
+    purpose: "Package details including weight and dimensions"
+    relationships:
+      - "belongsTo Shipment"
+      
+  ShipmentStatus:
+    purpose: "Status tracking and history for shipments"
+    relationships:
+      - "belongsTo Shipment"
+      - "belongsTo User (updated_by)"
+      
+  ShipmentRate:
+    purpose: "Applied rates and markups for shipment"
+    relationships:
+      - "belongsTo Shipment"
+      - "belongsTo Shipper (carrier)"
+      - "belongsTo Branch"
+
+# =================================================================
+# 7-STEP WORKFLOW SPECIFICATIONS
+# =================================================================
+# Based on module breakdown, this workflow MUST be implemented:
+
+seven_step_workflow:
+  step_1_customer_selection:
+    description: "Customer Selection/Creation"
+    purpose: "Select existing or create new customer"
+    data_collected:
+      - "Customer search and selection"
+      - "Quick customer creation"
+      - "Customer validation"
+    session_storage: "customer_data"
+    
+  step_2_sender_information:
+    description: "Sender Information"
+    purpose: "Select sender and pickup address"
+    data_collected:
+      - "Sender selection from customer"
+      - "Pickup address selection"
+      - "Sender contact verification"
+    session_storage: "sender_data"
+    
+  step_3_receiver_information:
+    description: "Receiver Information"
+    purpose: "Enter receiver and delivery details"
+    data_collected:
+      - "Receiver name and contact"
+      - "Delivery address"
+      - "Special delivery instructions"
+    session_storage: "receiver_data"
+    
+  step_4_package_details:
+    description: "Package Details (weight, dimensions)"
+    purpose: "Enter package specifications"
+    data_collected:
+      - "Package weight"
+      - "Package dimensions"
+      - "Package type and contents"
+      - "Special handling requirements"
+    session_storage: "package_data"
+    
+  step_5_service_selection:
+    description: "Service Selection (express, standard)"
+    purpose: "Choose shipping service type"
+    data_collected:
+      - "Service type selection"
+      - "Delivery time preferences"
+      - "Special services (COD, insurance)"
+    session_storage: "service_data"
+    
+  step_6_rate_comparison:
+    description: "Rate Comparison & Selection"
+    purpose: "Compare carrier rates and select"
+    data_collected:
+      - "Real-time quotes from carriers"
+      - "Rate comparison display"
+      - "Carrier and rate selection"
+      - "Final price calculation"
+    session_storage: "rate_data"
+    
+  step_7_payment_confirmation:
+    description: "Payment & Confirmation"
+    purpose: "Payment processing and shipment creation"
+    data_collected:
+      - "Payment method selection"
+      - "Payment processing"
+      - "Shipment confirmation"
+      - "Label generation trigger"
+    session_storage: "cleared_after_completion"
+
+# =================================================================
+# BRANCH ISOLATION SPECIFICATIONS
+# =================================================================
+# Based on module breakdown, this system MUST be implemented:
+
+branch_isolation_system:
+  shipment_isolation:
+    description: "Shipments isolated by branch"
+    requirements:
+      - "Users can only see shipments from their branch"
+      - "Shipment numbers include branch prefix"
+      - "Reports filtered by branch automatically"
+      - "Cross-branch data access prevented"
+    
+  session_management:
+    description: "Progressive form with session storage"
+    requirements:
+      - "Step data saved to session storage"
+      - "Form resumption capability"
+      - "Session cleanup after completion"
+      - "Multi-user session isolation"
+
+# =================================================================
+# CRITICAL: AI INSTRUCTIONS FOR COMPLETE GENERATION
+# =================================================================
+# When AI processes this file, it MUST:
+# 1. Generate ALL 4 controllers with 7-step workflow logic
+# 2. Generate ALL 4 models with proper relationships
+# 3. Implement complete 7-step workflow with session storage
+# 4. Create progressive form interface with Bootstrap wizard
+# 5. Implement branch isolation throughout
+# 6. Integrate with Customer module for data selection
+# 7. Integrate with Shipper module for real-time quotes
+# 8. Add proper validation for each workflow step
+# ================================================================= 

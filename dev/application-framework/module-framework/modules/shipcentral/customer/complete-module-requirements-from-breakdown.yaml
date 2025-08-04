@@ -1,0 +1,261 @@
+# =================================================================
+# CUSTOMER MODULE REQUIREMENTS - FROM MODULE BREAKDOWN
+# =================================================================
+# Generated from 07-module-breakdown-planning.yaml using improved template
+# STATUS: COMPLETE DATA TRANSFER FROM BREAKDOWN
+# =================================================================
+
+# BASIC MODULE INFO (from module breakdown)
+module_folder: "Customer"
+output_organization: true
+application_name: "ShipCentral"
+module_type: "CREATE NEW"
+
+# APPLICATION CONTEXT (transfer from breakdown)
+application_context:
+  application_name: "ShipCentral"
+  business_domain: "Multi-branch shipping and logistics management"
+  module_role: "Single database for all customer data shared across branches with sender multiple addresses"
+  integration_with: ["User", "Branch", "Shipment"]
+  technology_stack:
+    framework: "Laravel 8.12"
+    frontend: "Blade + jQuery with autocomplete"
+    database: "MariaDB with simple indexes"
+    ui: "Bootstrap 5 + DataTables + Select2"
+    architecture: "Modular (nwidart/laravel-modules)"
+
+# TRANSFER COMPLETE MODULE BREAKDOWN DATA
+module_breakdown_transfer:
+  # COPIED EXACTLY from 07-module-breakdown-planning.yaml
+  core_features: |
+    - Centralized customer database
+    - Three-person model: Customer → Sender → Receiver
+    - Multiple addresses per sender
+    - Cross-branch customer sharing
+    - Customer search and autocomplete
+  
+  controllers_needed: |
+    - CustomerAdminController: Branch admin manages customers
+    - CustomerController: Branch staff customer lookup
+    - SenderController: Sender information management
+    - ReceiverController: Receiver information management
+    
+  models_needed: |
+    - Customer: Basic customer information
+    - Sender: Sender details with multiple addresses
+    - Receiver: Receiver information
+    - Address: Address management for senders/receivers
+    
+  business_purpose: |
+    Single database for all customer data shared across branches with sender multiple addresses
+    
+# USER REQUIREMENT (enhanced with breakdown data)
+user_requirement: |
+  Create comprehensive Customer module for ShipCentral's centralized customer management based on module breakdown specifications.
+  
+  **Business Context:** 
+  Single database for all customer data shared across branches with sender multiple addresses for efficient multi-branch operations.
+  
+  **Core Features:**
+  - Centralized customer database
+  - Three-person model: Customer → Sender → Receiver
+  - Multiple addresses per sender
+  - Cross-branch customer sharing
+  - Customer search and autocomplete
+  
+  **Controllers Required:**
+  - CustomerAdminController: Branch admin manages customers
+  - CustomerController: Branch staff customer lookup
+  - SenderController: Sender information management
+  - ReceiverController: Receiver information management
+  
+  **Models Required:**
+  - Customer: Basic customer information
+  - Sender: Sender details with multiple addresses
+  - Receiver: Receiver information
+  - Address: Address management for senders/receivers
+  
+  **Integration Requirements:**
+  - Depends on: User, Branch
+  - Affects: Shipment
+
+# TECHNICAL PREFERENCES (from Step 6)
+technical_preferences:
+  framework: "Laravel 8.12"
+  frontend: "Blade + jQuery with autocomplete"
+  database: "MariaDB with simple indexes"
+  architecture: "Repository pattern"
+
+# CONTROLLER PATTERN (from breakdown)
+controller_pattern: "CustomerAdminController"
+
+# DEVELOPMENT INFO (from breakdown)
+development_info:
+  priority: "HIGH - Phase 2"
+  development_estimate: "2-3 weeks"
+  dependencies: ["User", "Branch"]
+  affects: ["Shipment"]
+  phase: "Business Core Modules (Phase 2 - Main Business Logic)"
+
+# =================================================================
+# DETAILED CONTROLLER SPECIFICATIONS
+# =================================================================
+# Based on module breakdown, these controllers MUST be generated:
+
+controller_specifications:
+  CustomerAdminController:
+    purpose: "Branch admin manages customers with cross-branch access"
+    access_level: "Branch Admin"
+    methods_required:
+      - "index(): List customers with search and filter"
+      - "create(): Add new customer"
+      - "store(): Save new customer"
+      - "show(): View customer details and history"
+      - "edit(): Edit customer information"
+      - "update(): Update customer data"
+      - "destroy(): Deactivate customer"
+      - "search(): AJAX customer search"
+      - "merge(): Merge duplicate customers"
+      
+  CustomerController:
+    purpose: "Branch staff customer lookup and selection"
+    access_level: "Branch Staff"
+    methods_required:
+      - "search(): Quick customer search for shipments"
+      - "autocomplete(): AJAX autocomplete for forms"
+      - "select(): Select customer for shipment"
+      - "quickAdd(): Quick customer creation"
+      - "recent(): Recent customers list"
+      
+  SenderController:
+    purpose: "Sender information management with multiple addresses"
+    access_level: "Branch Staff and Admin"
+    methods_required:
+      - "index(): List senders for customer"
+      - "create(): Add new sender"
+      - "store(): Save sender information"
+      - "show(): View sender details"
+      - "edit(): Edit sender information"
+      - "update(): Update sender data"
+      - "addAddress(): Add new address to sender"
+      - "selectAddress(): Select default address"
+      
+  ReceiverController:
+    purpose: "Receiver information management"
+    access_level: "Branch Staff and Admin"
+    methods_required:
+      - "search(): Search receivers"
+      - "create(): Add new receiver"
+      - "store(): Save receiver information"
+      - "show(): View receiver details"
+      - "edit(): Edit receiver information"
+      - "update(): Update receiver data"
+      - "frequent(): Frequent receivers list"
+
+# =================================================================
+# DETAILED MODEL SPECIFICATIONS
+# =================================================================
+# Based on module breakdown, these models MUST be generated:
+
+model_specifications:
+  Customer:
+    purpose: "Basic customer information shared across branches"
+    relationships:
+      - "hasMany Sender"
+      - "hasMany Shipment"
+      - "belongsTo Branch (created_by_branch)"
+      
+  Sender:
+    purpose: "Sender details with multiple addresses"
+    relationships:
+      - "belongsTo Customer"
+      - "hasMany Address"
+      - "hasMany Shipment"
+      
+  Receiver:
+    purpose: "Receiver information for shipments"
+    relationships:
+      - "hasMany Shipment"
+      - "belongsTo Address (optional)"
+      
+  Address:
+    purpose: "Address management for senders and receivers"
+    relationships:
+      - "belongsTo Sender"
+      - "hasMany Shipment"
+
+# =================================================================
+# THREE-PERSON MODEL SPECIFICATIONS
+# =================================================================
+# Based on module breakdown, this system MUST be implemented:
+
+three_person_model:
+  customer_level:
+    description: "Top-level customer entity"
+    purpose: "Basic company/person information"
+    data:
+      - "Company name or personal name"
+      - "Tax ID or identification"
+      - "Contact information"
+      - "Customer type (business/individual)"
+    
+  sender_level:
+    description: "Sender with multiple addresses"
+    purpose: "Person sending packages with address options"
+    data:
+      - "Sender name and contact"
+      - "Multiple pickup addresses"
+      - "Default address selection"
+      - "Sender-specific preferences"
+    
+  receiver_level:
+    description: "Package receiver information"
+    purpose: "Destination person and address"
+    data:
+      - "Receiver name and contact"
+      - "Delivery address"
+      - "Delivery instructions"
+      - "Receiver preferences"
+
+# =================================================================
+# CROSS-BRANCH SHARING SPECIFICATIONS
+# =================================================================
+# Based on module breakdown, this system MUST be implemented:
+
+cross_branch_sharing:
+  customer_sharing:
+    description: "Customers shared across all branches"
+    requirements:
+      - "Any branch can access any customer"
+      - "Customer creation tracked by branch"
+      - "Updates visible to all branches"
+      - "No customer duplication"
+    
+  search_system:
+    description: "Fast customer search and autocomplete"
+    requirements:
+      - "Real-time search across all customers"
+      - "Autocomplete for quick selection"
+      - "Recent customers prioritized"
+      - "Duplicate detection and merging"
+    
+  address_management:
+    description: "Multiple addresses per sender"
+    requirements:
+      - "Multiple pickup addresses per sender"
+      - "Default address selection"
+      - "Address validation and formatting"
+      - "Address history and reuse"
+
+# =================================================================
+# CRITICAL: AI INSTRUCTIONS FOR COMPLETE GENERATION
+# =================================================================
+# When AI processes this file, it MUST:
+# 1. Generate ALL 4 controllers with proper access levels
+# 2. Generate ALL 4 models with three-person relationship
+# 3. Implement cross-branch customer sharing
+# 4. Create search and autocomplete functionality
+# 5. Implement multiple address management
+# 6. Add customer duplication detection
+# 7. Ensure integration with Branch module for access control
+# ================================================================= 

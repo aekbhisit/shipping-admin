@@ -1,0 +1,13 @@
+{
+    "name": "Default",
+    "alias": "default",
+    "description": "",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\Default\\Providers\\DefaultServiceProvider"
+    ],
+    "aliases": {},
+    "files": [],
+    "requires": []
+}

@@ -1,0 +1,544 @@
+# =================================================================
+# SHIPPER MODULE - DETAILED SPECIFICATION (MASTER FILE)
+# =================================================================
+# APPLICATION: SHIPCENTRAL SHIPPING MANAGEMENT
+# STAGE 5: DETAILED TECHNICAL SPECIFICATION
+# STATUS: READY FOR CODE GENERATION
+# =================================================================
+
+# This file serves as the MASTER FILE containing:
+# 1. ALL requirement-from-breakdown specifications
+# 2. USER ANSWER ADJUSTMENTS and preferences
+# 3. TECHNICAL IMPLEMENTATION DETAILS
+# 4. INTEGRATION SPECIFICATIONS
+
+# =================================================================
+# MODULE OVERVIEW
+# =================================================================
+module_info:
+  name: "Shipper"
+  laravel_module_name: "Shipper"
+  purpose: "Carrier API integration for Thailand Post, J&T Express, Flash Express with sequential quote processing"
+  type: "CREATE NEW"
+  complexity: "High"
+  estimated_development_time: "3-4 weeks"
+  
+application_context:
+  application_name: "ShipCentral"
+  business_domain: "Multi-branch shipping and logistics management"
+  module_role: "Carrier API integration and quote management for real-time shipping quotes"
+  integration_with: ["User", "Branch", "Shipment"]
+
+development_info:
+  priority: "CRITICAL - Phase 2"
+  dependencies: ["User", "Branch"]
+  affects: ["Shipment"]
+  phase: "Business Core Modules (Phase 2 - Main Business Logic)"
+
+# =================================================================
+# USER ANSWERS INTEGRATION
+# =================================================================
+user_preferences:
+  api_call_strategy: "Sequential API calls with simple error handling" # q1: answer "a"
+  quote_generation_timing: "On-demand quote generation per carrier selection" # q2: answer "b"
+  markup_management_method: "Fixed percentage markup per branch per carrier" # q3: answer "a"
+  admin_interface_style: "DataTable interface for admin management" # q4: answer "b"
+  quote_comparison_features: "No quote comparison needed" # q5: answer "a"
+  
+  ui_preferences:
+    carrier_management_interface: "Simple list with enable/disable toggle" # q6: answer "a"
+    api_configuration_complexity: "Basic forms with essential fields only" # q7: answer "a"
+    error_handling_display: "Basic error messages with retry options" # q8: answer "b"
+    quote_result_presentation: "Simple list format without comparison" # q9: answer "a"
+    testing_integration_workflow: "Basic test quote with pass/fail result" # q10: answer "b"
+  
+  technical_preferences:
+    api_credential_storage: "JSON format in database" # q11: answer "b"
+    error_handling_complexity: "Basic error logging and user notification" # q12: answer "b"
+    carrier_response_caching: "No caching - real-time calls only" # q13: answer "a"
+    rate_limiting_implementation: "Basic rate limiting with simple delays" # q14: answer "b"
+    tracking_integration_requirement: "No tracking integration needed" # q15: answer "a"
+  
+  validation_preferences:
+    api_credential_validation: "Basic format validation only" # q16: answer "a"
+    package_dimension_validation: "Simple range validation" # q17: answer "a"
+    service_availability_checking: "Basic availability check on API call" # q18: answer "b"
+  
+  integration_preferences:
+    shipment_module_integration: "Direct integration with quote selection" # q19: answer "b"
+    database_optimization: "Basic database optimization" # q20: answer "a"
+
+# =================================================================
+# CARRIER SPECIFICATIONS
+# =================================================================
+carrier_specifications:
+  thailand_post:
+    name: "Thailand Post"
+    api_type: "REST API"
+    authentication: "API Key"
+    base_url: "https://trackapi.thailandpost.co.th"
+    services: ["EMS", "Registered Mail", "Surface Mail"]
+    credentials_required: ["api_key", "username"]
+    
+  jt_express:
+    name: "J&T Express"
+    api_type: "REST API"
+    authentication: "API Key + Secret"
+    base_url: "https://openapi.jtexpress.my"
+    services: ["Standard", "Express", "Premium"]
+    credentials_required: ["api_key", "api_secret", "customer_code"]
+    
+  flash_express:
+    name: "Flash Express"
+    api_type: "REST API"
+    authentication: "API Key + Token"
+    base_url: "https://open-api.flashexpress.com"
+    services: ["Standard", "Express", "Same Day"]
+    credentials_required: ["api_key", "api_token", "shop_id"]
+
+# =================================================================
+# DATABASE SCHEMA
+# =================================================================
+database_schema:
+  carriers:
+    purpose: "Carrier/shipper information and configuration"
+    fields:
+      id: "bigint unsigned, auto_increment, primary key"
+      name: "varchar(255), not null" # Thailand Post, J&T Express, Flash Express
+      code: "varchar(50), not null, unique" # TP, JT, FLASH
+      api_base_url: "varchar(500), not null"
+      api_version: "varchar(20), nullable"
+      logo_path: "varchar(500), nullable"
+      is_active: "boolean, default true"
+      supported_services: "json, nullable" # Array of service types
+      api_documentation_url: "varchar(500), nullable"
+      created_at: "timestamp"
+      updated_at: "timestamp"
+    indexes:
+      - "code" # Unique carrier code
+      - "is_active" # Active carriers only
+      - "name" # For admin search
+    
+  carrier_credentials:
+    purpose: "JSON format API credentials storage per branch per carrier"
+    fields:
+      id: "bigint unsigned, auto_increment, primary key"
+      branch_id: "bigint unsigned, not null, foreign key to branches.id"
+      carrier_id: "bigint unsigned, not null, foreign key to carriers.id"
+      credentials: "json, not null" # Store API keys, secrets, tokens
+      is_active: "boolean, default true"
+      last_tested_at: "timestamp, nullable"
+      test_result: "enum('success', 'failed'), nullable"
+      test_error_message: "text, nullable"
+      created_at: "timestamp"
+      updated_at: "timestamp"
+      updated_by: "bigint unsigned, not null, foreign key to users.id"
+    indexes:
+      - "unique composite(branch_id, carrier_id)" # One credential set per branch per carrier
+      - "branch_id" # Branch lookup
+      - "carrier_id" # Carrier lookup
+      - "is_active" # Active credentials only
+    
+  quote_requests:
+    purpose: "Track quote requests for debugging and analytics"
+    fields:
+      id: "bigint unsigned, auto_increment, primary key"
+      branch_id: "bigint unsigned, not null, foreign key to branches.id"
+      carrier_id: "bigint unsigned, not null, foreign key to carriers.id"
+      request_data: "json, not null" # Package details sent to API
+      response_data: "json, nullable" # Full API response
+      quote_price: "decimal(10,2), nullable" # Parsed price
+      service_type: "varchar(100), nullable" # Service selected
+      is_successful: "boolean, default false"
+      error_message: "text, nullable"
+      processing_time_ms: "integer, nullable" # Response time
+      requested_at: "timestamp"
+      requested_by: "bigint unsigned, not null, foreign key to users.id"
+    indexes:
+      - "branch_id" # Branch filtering
+      - "carrier_id" # Carrier filtering
+      - "requested_at" # Time-based queries
+      - "is_successful" # Success rate analysis
+
+# =================================================================
+# CONTROLLER ARCHITECTURE
+# =================================================================
+controller_architecture:
+  CarrierAdminController:
+    purpose: "Company admin manages global carrier configuration"
+    access_level: "Company Admin"
+    route_prefix: "admin/carriers"
+    middleware: ["auth", "role:company_admin"]
+    methods:
+      index:
+        description: "List carriers with DataTable interface"
+        ui_implementation: "DataTable interface for admin management"
+        features: ["enable_disable_toggle", "status_filter"]
+      create:
+        description: "Add new carrier"
+        ui_implementation: "Basic forms with essential fields only"
+        validation: "Basic format validation only"
+      store:
+        description: "Save carrier configuration"
+        validation: "Basic required field validation"
+      show:
+        description: "View carrier details"
+        display: "Carrier info, supported services, API documentation"
+      edit:
+        description: "Edit carrier information"
+        ui_implementation: "Basic forms with essential fields only"
+      update:
+        description: "Update carrier data"
+        audit_trail: "Log changes"
+      destroy:
+        description: "Deactivate carrier"
+        implementation: "Soft delete - mark as inactive"
+        
+  CarrierCredentialController:
+    purpose: "Branch admin manages carrier credentials for their branch"
+    access_level: "Branch Admin"
+    route_prefix: "admin/branch/credentials"
+    middleware: ["auth", "role:branch_admin", "branch.isolation"]
+    methods:
+      index:
+        description: "List branch carrier credentials"
+        ui_implementation: "Simple list with enable/disable toggle"
+        scope: "Current branch credentials only"
+      create:
+        description: "Add carrier credentials"
+        ui_implementation: "Basic forms with essential fields only"
+        credential_format: "JSON format in database"
+      store:
+        description: "Save carrier credentials"
+        validation: "Basic format validation only"
+        security: "Encrypt sensitive credential data"
+      edit:
+        description: "Edit carrier credentials"
+        ui_implementation: "Basic forms with masked credentials"
+      update:
+        description: "Update credentials"
+        audit_trail: "Log credential changes"
+      testConnection:
+        description: "Test API connection"
+        ui_implementation: "Basic test quote with pass/fail result"
+        implementation: "Basic availability check on API call"
+        
+  QuoteApiController:
+    purpose: "Handle quote requests from shipment module"
+    access_level: "Branch Staff"
+    route_prefix: "api/quotes"
+    middleware: ["auth", "role:branch_staff"]
+    methods:
+      getQuotes:
+        description: "Get quotes from multiple carriers"
+        implementation: "Sequential API calls with simple error handling"
+        timing: "On-demand quote generation per carrier selection"
+        error_handling: "Basic error logging and user notification"
+      getCarrierQuote:
+        description: "Get quote from specific carrier"
+        implementation: "Direct API integration"
+        validation: "Simple range validation for package dimensions"
+      refreshQuote:
+        description: "Refresh quote for carrier"
+        caching: "No caching - real-time calls only"
+        rate_limiting: "Basic rate limiting with simple delays"
+
+# =================================================================
+# SERVICE LAYER (API Integration)
+# =================================================================
+service_architecture:
+  CarrierApiService:
+    purpose: "Main service for carrier API coordination"
+    methods:
+      - "getQuotesFromAllCarriers(array $packageData, int $branchId): array"
+      - "getQuoteFromCarrier(int $carrierId, array $packageData, int $branchId): array"
+      - "testCarrierConnection(int $carrierId, int $branchId): bool"
+      - "validateCredentials(int $carrierId, array $credentials): bool"
+      
+  ThailandPostApiService:
+    purpose: "Thailand Post API integration"
+    implementation: "Sequential API calls with simple error handling"
+    methods:
+      - "getQuote(array $packageData, array $credentials): array"
+      - "validateCredentials(array $credentials): bool"
+      - "parseApiResponse(array $response): array"
+      - "handleApiError(Exception $exception): array"
+      
+  JTExpressApiService:
+    purpose: "J&T Express API integration"
+    implementation: "Sequential API calls with simple error handling"
+    methods:
+      - "getQuote(array $packageData, array $credentials): array"
+      - "validateCredentials(array $credentials): bool"
+      - "parseApiResponse(array $response): array"
+      - "handleApiError(Exception $exception): array"
+      
+  FlashExpressApiService:
+    purpose: "Flash Express API integration"
+    implementation: "Sequential API calls with simple error handling"
+    methods:
+      - "getQuote(array $packageData, array $credentials): array"
+      - "validateCredentials(array $credentials): bool"
+      - "parseApiResponse(array $response): array"
+      - "handleApiError(Exception $exception): array"
+      
+  QuoteProcessingService:
+    purpose: "Quote processing and markup application"
+    methods:
+      - "processQuoteRequest(array $packageData, int $branchId): array"
+      - "applyBranchMarkup(float $basePrice, int $branchId, int $carrierId): float"
+      - "formatQuoteResponse(array $quotes): array"
+      - "logQuoteRequest(array $requestData, array $response, int $branchId): void"
+
+# =================================================================
+# MODEL RELATIONSHIPS & BUSINESS LOGIC
+# =================================================================
+models_and_relationships:
+  Carrier:
+    purpose: "Carrier/shipper configuration"
+    relationships:
+      - "hasMany(CarrierCredential::class)"
+      - "hasMany(QuoteRequest::class)"
+      - "hasMany(BranchMarkup::class)"
+    business_methods:
+      - "isActive(): bool"
+      - "getSupportedServices(): array"
+      - "hasCredentialsForBranch(int $branchId): bool"
+      - "getCredentialsForBranch(int $branchId): ?CarrierCredential"
+    scopes:
+      - "scopeActive()"
+      
+  CarrierCredential:
+    purpose: "Branch-specific carrier API credentials"
+    relationships:
+      - "belongsTo(Branch::class)"
+      - "belongsTo(Carrier::class)"
+      - "belongsTo(User::class, 'updated_by')"
+    business_methods:
+      - "getDecryptedCredentials(): array" # Decrypt JSON credentials
+      - "setCredentials(array $credentials): void" # Encrypt and store
+      - "isActive(): bool"
+      - "hasBeenTested(): bool"
+      - "getLastTestResult(): ?string"
+    scopes:
+      - "scopeActive()"
+      - "scopeByBranch(int $branchId)"
+      
+  QuoteRequest:
+    purpose: "Track API requests for debugging"
+    relationships:
+      - "belongsTo(Branch::class)"
+      - "belongsTo(Carrier::class)"
+      - "belongsTo(User::class, 'requested_by')"
+    business_methods:
+      - "isSuccessful(): bool"
+      - "getFormattedPrice(): ?string"
+      - "getProcessingTimeSeconds(): ?float"
+    scopes:
+      - "scopeSuccessful()"
+      - "scopeFailed()"
+      - "scopeToday()"
+
+# =================================================================
+# API INTEGRATION PATTERNS
+# =================================================================
+api_integration_patterns:
+  sequential_processing:
+    description: "Sequential API calls with simple error handling"
+    implementation: |
+      1. Get active carriers for branch
+      2. Loop through each carrier sequentially
+      3. Make API call with basic error handling
+      4. Apply branch markup to successful quotes
+      5. Return results in simple format
+      
+  error_handling:
+    strategy: "Basic error logging and user notification"
+    implementation: |
+      1. Catch API exceptions
+      2. Log error details to database
+      3. Return user-friendly error message
+      4. Continue with other carriers
+      
+  markup_application:
+    strategy: "Fixed percentage markup per branch per carrier"
+    implementation: |
+      1. Get base price from carrier API
+      2. Lookup branch markup percentage for carrier
+      3. Calculate markup amount
+      4. Return final price to user
+      
+  credential_management:
+    storage: "JSON format in database"
+    security: "Encrypted storage of sensitive data"
+    validation: "Basic format validation only"
+
+# =================================================================
+# VIEW STRUCTURE & UI IMPLEMENTATION
+# =================================================================
+view_structure:
+  admin_layout:
+    base_template: "layouts.admin"
+    navigation: "Carrier management menu"
+    
+  carrier_management:
+    index:
+      template: "carrier.admin.index"
+      ui_implementation: "DataTable interface for admin management"
+      features: ["enable_disable_toggle", "search", "filter_by_status"]
+      
+    create:
+      template: "carrier.admin.create"
+      ui_implementation: "Basic forms with essential fields only"
+      validation: "Basic format validation only"
+      
+    show:
+      template: "carrier.admin.show"
+      display: "Carrier details, API info, supported services"
+      
+  credential_management:
+    index:
+      template: "credential.branch.index"
+      ui_implementation: "Simple list with enable/disable toggle"
+      scope: "Branch-specific credentials only"
+      
+    create:
+      template: "credential.branch.create"
+      ui_implementation: "Basic forms with essential fields only"
+      credential_format: "JSON input for API credentials"
+      
+    test:
+      template: "credential.branch.test"
+      ui_implementation: "Basic test quote with pass/fail result"
+      features: ["test_connection", "view_results"]
+
+# =================================================================
+# ROUTING STRUCTURE
+# =================================================================
+routing_structure:
+  admin_routes:
+    prefix: "admin"
+    middleware: ["auth", "role:company_admin"]
+    routes:
+      - "Route::resource('carriers', 'CarrierAdminController')"
+      
+  branch_routes:
+    prefix: "admin/branch"
+    middleware: ["auth", "role:branch_admin", "branch.isolation"]
+    routes:
+      - "Route::resource('credentials', 'CarrierCredentialController')"
+      - "Route::post('credentials/{id}/test', 'CarrierCredentialController@testConnection')"
+      
+  api_routes:
+    prefix: "api"
+    middleware: ["auth:api", "role:branch_staff"]
+    routes:
+      - "Route::post('quotes/get', 'QuoteApiController@getQuotes')"
+      - "Route::post('quotes/carrier/{id}', 'QuoteApiController@getCarrierQuote')"
+      - "Route::post('quotes/refresh/{id}', 'QuoteApiController@refreshQuote')"
+
+# =================================================================
+# INTEGRATION FEATURES
+# =================================================================
+integration_specifications:
+  shipment_module_integration:
+    implementation: "Direct integration with quote selection"
+    workflow: "Shipment module calls QuoteApiController for quotes"
+    quote_format: "Simple list format without comparison"
+    markup_integration: "Automatic markup application on all quotes"
+    
+  branch_module_integration:
+    relationship: "Carrier credentials are branch-specific"
+    markup_integration: "Fixed percentage markup per branch per carrier"
+    isolation: "Each branch maintains own carrier credentials"
+    
+  user_module_integration:
+    access_control: "Role-based access to carrier management"
+    audit_trail: "Track credential changes and quote requests"
+
+# =================================================================
+# SECURITY CONSIDERATIONS
+# =================================================================
+security_specifications:
+  credential_security:
+    storage: "Encrypted JSON format in database"
+    access_control: "Branch isolation for credential access"
+    validation: "Basic format validation only"
+    
+  api_security:
+    rate_limiting: "Basic rate limiting with simple delays"
+    error_handling: "Don't expose internal API details"
+    logging: "Log all API requests for debugging"
+    
+  data_protection:
+    credential_encryption: "Encrypt sensitive API credentials"
+    audit_trail: "Track all credential and configuration changes"
+    access_logging: "Log API access attempts"
+
+# =================================================================
+# FILE STRUCTURE
+# =================================================================
+file_structure:
+  controllers:
+    - "Http/Controllers/CarrierAdminController.php"
+    - "Http/Controllers/CarrierCredentialController.php"
+    - "Http/Controllers/QuoteApiController.php"
+    
+  services:
+    - "Services/CarrierApiService.php"
+    - "Services/ThailandPostApiService.php"
+    - "Services/JTExpressApiService.php"
+    - "Services/FlashExpressApiService.php"
+    - "Services/QuoteProcessingService.php"
+    
+  models:
+    - "Entities/Carrier.php"
+    - "Entities/CarrierCredential.php"
+    - "Entities/QuoteRequest.php"
+    
+  views:
+    admin:
+      - "Resources/views/admin/carriers/index.blade.php"
+      - "Resources/views/admin/carriers/create.blade.php"
+      - "Resources/views/admin/carriers/show.blade.php"
+    branch:
+      - "Resources/views/branch/credentials/index.blade.php"
+      - "Resources/views/branch/credentials/create.blade.php"
+      - "Resources/views/branch/credentials/test.blade.php"
+      
+  migrations:
+    - "Database/Migrations/xxxx_create_carriers_table.php"
+    - "Database/Migrations/xxxx_create_carrier_credentials_table.php"
+    - "Database/Migrations/xxxx_create_quote_requests_table.php"
+    
+  config:
+    - "Config/carriers.php" # Carrier configuration
+
+# =================================================================
+# SPECIFICATION SUMMARY
+# =================================================================
+specification_summary:
+  total_controllers: 3
+  total_services: 5
+  total_models: 3
+  total_views: 6
+  
+  key_features:
+    - "Three carrier integrations: Thailand Post, J&T Express, Flash Express"
+    - "Sequential API calls with simple error handling"
+    - "JSON format credential storage with encryption"
+    - "Fixed percentage markup per branch per carrier"
+    - "DataTable interface for admin management"
+    - "Basic test quote functionality"
+    - "No caching - real-time calls only"
+    - "Basic rate limiting and error handling"
+
+# =================================================================
+# STATUS: READY FOR CODE GENERATION
+# =================================================================
+generation_readiness:
+  requirements_complete: true
+  user_answers_integrated: true
+  technical_details_specified: true
+  architecture_defined: true
+  ready_for_stage_6: true 

@@ -1,0 +1,13 @@
+{
+    "name": "Customer",
+    "alias": "customer",
+    "description": "Customer management module for ShipCentral - Centralized customer database with three-person model",
+    "keywords": ["customer", "sender", "receiver", "address", "shipping", "logistics"],
+    "priority": 2,
+    "providers": [
+        "Modules\\Customer\\Providers\\CustomerServiceProvider"
+    ],
+    "aliases": {},
+    "files": [],
+    "requires": ["User", "Branch"]
+} 

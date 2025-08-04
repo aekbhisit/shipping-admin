@@ -1,0 +1,13 @@
+{
+    "name": "Favorites",
+    "alias": "favorites",
+    "description": "",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\Favorites\\Providers\\FavoritesServiceProvider"
+    ],
+    "aliases": {},
+    "files": [],
+    "requires": []
+}

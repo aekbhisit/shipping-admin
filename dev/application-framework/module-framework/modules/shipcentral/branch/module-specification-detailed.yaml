@@ -1,0 +1,515 @@
+# =================================================================
+# BRANCH MODULE - DETAILED SPECIFICATION (MASTER FILE)
+# =================================================================
+# APPLICATION: SHIPCENTRAL SHIPPING MANAGEMENT
+# STAGE 5: DETAILED TECHNICAL SPECIFICATION
+# STATUS: READY FOR CODE GENERATION
+# =================================================================
+
+# This file serves as the MASTER FILE containing:
+# 1. ALL requirement-from-breakdown specifications
+# 2. USER ANSWER ADJUSTMENTS and preferences
+# 3. TECHNICAL IMPLEMENTATION DETAILS
+# 4. INTEGRATION SPECIFICATIONS
+
+# =================================================================
+# MODULE OVERVIEW
+# =================================================================
+module_info:
+  name: "Branch"
+  laravel_module_name: "Branch"
+  purpose: "Multi-branch operations with isolated data, rate markup management, and performance tracking"
+  type: "CREATE NEW"
+  complexity: "Medium-High"
+  estimated_development_time: "2-3 weeks"
+  
+application_context:
+  application_name: "ShipCentral"
+  business_domain: "Multi-branch shipping and logistics management"
+  module_role: "Manage different shipping branches with isolated operations and custom markup rules"
+  integration_with: ["User", "Customer", "Shipment", "Shipper", "Audit"]
+
+development_info:
+  priority: "CRITICAL - Phase 1"
+  dependencies: ["User"]
+  affects: ["Customer", "Shipment", "Shipper", "Audit"]
+  phase: "Foundation Modules (Phase 1 - Essential Infrastructure)"
+
+# =================================================================
+# USER ANSWERS INTEGRATION
+# =================================================================
+# Based on user answers to 20 questions, these decisions have been made:
+
+user_preferences:
+  markup_strategy: "Fixed percentage markup per carrier per branch" # q1: answer "a"
+  isolation_level: "Complete isolation - no cross-branch data access" # q2: answer "a"
+  status_management: "Simple active/inactive status" # q3: answer "a"
+  markup_calculation_timing: "Real-time calculation at quote time" # q4: answer "a"
+  performance_metrics: "Basic shipment count and revenue" # q5: answer "a"
+  
+  ui_preferences:
+    admin_dashboard: "Basic branch info and quick stats" # q6: answer "a"
+    markup_management_interface: "Grid interface with bulk editing capabilities" # q7: answer "b"
+    branch_listing_organization: "Multiple view options with filtering" # q8: answer "d"
+    branch_settings_access: "Basic info + markup rates" # q9: answer "b"
+    reporting_interface: "Simple tables with basic metrics" # q10: answer "a"
+  
+  technical_preferences:
+    controller_separation: "All controllers with strict access control" # q11: answer "a"
+    markup_data_structure: "Simple branch_markups table with branch_id, carrier_id, markup" # q12: answer "a"
+    branch_isolation_middleware: "Model scopes for automatic branch filtering" # q13: answer "b"
+    performance_optimization: "Basic database indexes on branch_id" # q14: answer "a"
+    cross_branch_data_sharing: "Shared customer database with branch-specific preferences" # q15: answer "b"
+  
+  validation_preferences:
+    markup_validation_rules: "Minimum and maximum markup percentage limits" # q16: answer "a"
+    branch_registration_validation: "Required fields and format validation" # q17: answer "a"
+    access_control_validation: "Simple role-based access checking" # q18: answer "a"
+  
+  integration_preferences:
+    user_module_integration: "Service-based integration with shared context" # q19: answer "b"
+    shipper_module_integration: "Service layer for markup calculation" # q20: answer "b"
+
+# =================================================================
+# DATABASE SCHEMA (From breakdown + user preferences)
+# =================================================================
+database_schema:
+  branches:
+    purpose: "Branch details and configuration"
+    fields:
+      id: "bigint unsigned, auto_increment, primary key"
+      name: "varchar(255), not null"
+      code: "varchar(50), not null, unique" # Branch identifier
+      address: "text, not null"
+      phone: "varchar(20), not null"
+      email: "varchar(255), not null"
+      contact_person: "varchar(255), not null"
+      is_active: "boolean, default true, index"
+      operating_hours: "json, nullable" # Store operating hours
+      settings: "json, nullable" # Branch-specific settings
+      created_at: "timestamp"
+      updated_at: "timestamp"
+      created_by: "bigint unsigned, not null, foreign key to users.id"
+    indexes:
+      - "code" # Unique branch code
+      - "is_active" # Basic indexing per user preference
+      - "name" # For search functionality
+    
+  branch_markups:
+    purpose: "Simple markup rules per branch per carrier"
+    fields:
+      id: "bigint unsigned, auto_increment, primary key"
+      branch_id: "bigint unsigned, not null, foreign key to branches.id"
+      carrier_id: "bigint unsigned, not null, foreign key to carriers.id"
+      markup_percentage: "decimal(5,2), not null, default 0.00" # Fixed percentage
+      min_markup_amount: "decimal(8,2), default 0.00" # Minimum markup amount
+      max_markup_percentage: "decimal(5,2), default 100.00" # Maximum markup percentage
+      is_active: "boolean, default true"
+      created_at: "timestamp"
+      updated_at: "timestamp"
+      updated_by: "bigint unsigned, not null, foreign key to users.id"
+    indexes:
+      - "unique composite(branch_id, carrier_id)" # One markup per branch per carrier
+      - "branch_id" # Basic indexing
+      - "carrier_id"
+      - "is_active"
+    
+  branch_reports:
+    purpose: "Basic performance analytics per branch"
+    fields:
+      id: "bigint unsigned, auto_increment, primary key"
+      branch_id: "bigint unsigned, not null, foreign key to branches.id"
+      report_date: "date, not null"
+      shipment_count: "integer, default 0"
+      total_revenue: "decimal(12,2), default 0.00"
+      total_markup: "decimal(12,2), default 0.00"
+      report_data: "json, nullable" # Additional metrics
+      created_at: "timestamp"
+      updated_at: "timestamp"
+    indexes:
+      - "unique composite(branch_id, report_date)"
+      - "branch_id"
+      - "report_date"
+
+# =================================================================
+# CONTROLLER ARCHITECTURE (3 controllers from breakdown)
+# =================================================================
+controller_architecture:
+  BranchAdminController:
+    purpose: "Company admin manages all branches and configurations"
+    access_level: "Company Admin only"
+    route_prefix: "admin/branches"
+    middleware: ["auth", "role:company_admin"]
+    methods:
+      index:
+        description: "List all branches with multiple view options and filtering"
+        ui_implementation: "Multiple view options with filtering"
+        filters: ["status", "region", "performance"]
+        returns: "Paginated branches with basic metrics"
+      create:
+        description: "Add new branch"
+        ui_implementation: "Branch registration form"
+        validation: "Required fields and format validation"
+      store:
+        description: "Save new branch configuration"
+        validation_rules: "Required fields and format validation"
+        business_logic: "Auto-generate branch code if needed"
+      show:
+        description: "View branch details and performance"
+        display_elements: "Branch info + basic performance metrics"
+        performance_metrics: "Basic shipment count and revenue"
+      edit:
+        description: "Edit branch information"
+        ui_implementation: "Branch configuration form"
+        access_control: "Company Admin only"
+      update:
+        description: "Update branch data"
+        validation: "Required fields and format validation"
+        audit_trail: "Log changes for compliance"
+      destroy:
+        description: "Deactivate branch (soft delete)"
+        implementation: "Simple active/inactive status"
+      viewMarkups:
+        description: "View branch markup rules"
+        ui_implementation: "Grid interface with bulk editing capabilities"
+        
+  BranchSettingsController:
+    purpose: "Branch admin manages their own branch settings only"
+    access_level: "Branch Admin for own branch"
+    route_prefix: "admin/branch/settings"
+    middleware: ["auth", "role:branch_admin", "branch.isolation"]
+    branch_isolation: "Model scopes for automatic branch filtering"
+    methods:
+      index:
+        description: "View current branch settings"
+        ui_implementation: "Basic branch info and quick stats"
+        access_scope: "Own branch only"
+      edit:
+        description: "Edit own branch settings"
+        ui_implementation: "Basic info + markup rates"
+        constraints: "Cannot change critical settings"
+      update:
+        description: "Update own branch settings"
+        validation: "Simple role-based access checking"
+        audit_trail: "Log setting changes"
+      markups:
+        description: "Manage markup rules for carriers"
+        ui_implementation: "Grid interface with bulk editing capabilities"
+        validation: "Minimum and maximum markup percentage limits"
+      updateMarkups:
+        description: "Update carrier markups"
+        calculation_timing: "Real-time calculation at quote time"
+        validation: "Minimum and maximum markup percentage limits"
+        
+  BranchReportController:
+    purpose: "Branch performance and analytics reporting"
+    access_level: "Company Admin (all branches) / Branch Admin (own branch)"
+    route_prefix: "admin/reports/branch"
+    middleware: ["auth", "role:company_admin,branch_admin", "branch.scope"]
+    methods:
+      dashboard:
+        description: "Branch performance dashboard"
+        ui_implementation: "Simple tables with basic metrics"
+        metrics: "Basic shipment count and revenue"
+        scope: "Role-based branch access"
+      shipmentStats:
+        description: "Shipment statistics"
+        ui_implementation: "Simple tables with basic metrics"
+        filters: ["date_range", "carrier"]
+      revenueReport:
+        description: "Revenue and markup analysis"
+        calculation: "Fixed percentage markup per carrier per branch"
+        ui_implementation: "Simple tables with basic metrics"
+      export:
+        description: "Export branch reports"
+        formats: ["CSV", "PDF"]
+        scope: "Based on user role and branch access"
+
+# =================================================================
+# REPOSITORY PATTERN
+# =================================================================
+repository_architecture:
+  BranchRepositoryInterface:
+    purpose: "Branch data access interface"
+    methods:
+      # Basic CRUD
+      - "findById(int $id): Branch"
+      - "create(array $data): Branch"
+      - "update(int $id, array $data): Branch"
+      - "delete(int $id): bool"
+      
+      # Branch-specific queries
+      - "findActive(): Collection"
+      - "findByCode(string $code): ?Branch"
+      - "getBranchesWithPagination(array $filters): LengthAwarePaginator"
+      - "searchBranches(string $query): Collection"
+      
+      # Markup-related queries
+      - "getBranchMarkups(int $branchId): Collection"
+      - "getMarkupForCarrier(int $branchId, int $carrierId): ?BranchMarkup"
+      - "updateMarkup(int $branchId, int $carrierId, float $percentage): bool"
+      
+      # Performance queries
+      - "getBranchPerformance(int $branchId, array $dateRange): array"
+      - "getRevenueStats(int $branchId): array"
+      
+  BranchRepository:
+    purpose: "Eloquent implementation of branch repository"
+    optimization: "Basic database indexes on branch_id"
+    scoping: "Model scopes for automatic branch filtering"
+
+# =================================================================
+# MODEL RELATIONSHIPS & BUSINESS LOGIC
+# =================================================================
+models_and_relationships:
+  Branch:
+    purpose: "Branch details and configuration"
+    relationships:
+      - "hasMany(User::class, 'branch_id')"
+      - "hasMany(BranchMarkup::class)"
+      - "hasMany(BranchReport::class)"
+      - "hasMany(Shipment::class)"
+      - "belongsTo(User::class, 'created_by')"
+    scopes:
+      - "scopeActive()"
+      - "scopeByCode(string $code)"
+    business_methods:
+      - "getMarkupForCarrier(int $carrierId): ?BranchMarkup"
+      - "calculateMarkup(float $basePrice, int $carrierId): float"
+      - "getPerformanceMetrics(array $dateRange): array"
+      - "isActive(): bool"
+      
+  BranchMarkup:
+    purpose: "Simple markup rules per branch per carrier"
+    relationships:
+      - "belongsTo(Branch::class)"
+      - "belongsTo(Carrier::class)"
+      - "belongsTo(User::class, 'updated_by')"
+    business_methods:
+      - "calculateMarkup(float $basePrice): float"
+      - "isValid(): bool"
+      - "isWithinLimits(float $percentage): bool"
+      
+  BranchReport:
+    purpose: "Basic performance analytics per branch"
+    relationships:
+      - "belongsTo(Branch::class)"
+    business_methods:
+      - "generateDailyReport(): array"
+      - "updateMetrics(array $data): void"
+
+# =================================================================
+# MIDDLEWARE & SECURITY
+# =================================================================
+middleware_architecture:
+  BranchIsolationMiddleware:
+    purpose: "Enforce branch isolation for branch-scoped users"
+    implementation: "Model scopes for automatic branch filtering"
+    logic:
+      - "Apply automatic query scoping for branch admin"
+      - "Allow company admin full access"
+      - "Filter data by user's assigned branch"
+    
+  BranchScopeMiddleware:
+    purpose: "Apply branch scope based on user role"
+    implementation: "Service-based integration with shared context"
+    logic:
+      - "Set branch context based on user role"
+      - "Company Admin: can access all branches"
+      - "Branch Admin: restricted to own branch"
+
+# =================================================================
+# SERVICE LAYER
+# =================================================================
+service_architecture:
+  BranchService:
+    purpose: "Branch business logic and operations"
+    methods:
+      - "createBranch(array $data): Branch"
+      - "updateBranchSettings(int $branchId, array $settings): bool"
+      - "calculateMarkupForQuote(int $branchId, int $carrierId, float $basePrice): float"
+      - "generatePerformanceReport(int $branchId, array $dateRange): array"
+      - "validateMarkupLimits(float $percentage): bool"
+      
+  MarkupCalculationService:
+    purpose: "Service layer for markup calculation"
+    implementation: "Real-time calculation at quote time"
+    methods:
+      - "calculateMarkup(int $branchId, int $carrierId, float $basePrice): float"
+      - "getMarkupPercentage(int $branchId, int $carrierId): float"
+      - "validateMarkupRules(int $branchId, int $carrierId, float $percentage): bool"
+
+# =================================================================
+# VIEW STRUCTURE & UI IMPLEMENTATION
+# =================================================================
+view_structure:
+  admin_layout:
+    base_template: "layouts.admin"
+    navigation: "Branch management menu"
+    
+  branch_management:
+    index:
+      template: "branch.admin.index"
+      ui_implementation: "Multiple view options with filtering"
+      views: ["list", "grid", "map"]
+      filters: ["status", "region", "performance"]
+      
+    create:
+      template: "branch.admin.create"
+      ui_implementation: "Branch registration form"
+      validation: "Required fields and format validation"
+      
+    show:
+      template: "branch.admin.show"
+      display_elements:
+        - "Branch details"
+        - "Basic performance metrics"
+        - "Markup rules grid"
+        - "Recent activity"
+        
+    markups:
+      template: "branch.admin.markups"
+      ui_implementation: "Grid interface with bulk editing capabilities"
+      features: ["inline_edit", "bulk_update", "validation"]
+      
+  reports:
+    dashboard:
+      template: "branch.reports.dashboard"
+      ui_implementation: "Simple tables with basic metrics"
+      charts: ["basic_bar", "simple_line"]
+      
+    performance:
+      template: "branch.reports.performance"
+      ui_implementation: "Simple tables with basic metrics"
+      export_options: ["CSV", "PDF"]
+
+# =================================================================
+# ROUTING STRUCTURE
+# =================================================================
+routing_structure:
+  admin_routes: # routes/admin.php
+    prefix: "admin"
+    middleware: ["auth", "role:company_admin"]
+    routes:
+      - "Route::resource('branches', 'BranchAdminController')"
+      - "Route::get('branches/{id}/markups', 'BranchAdminController@viewMarkups')"
+      
+  branch_admin_routes: # routes/branch.php
+    prefix: "admin/branch"
+    middleware: ["auth", "role:branch_admin", "branch.isolation"]
+    routes:
+      - "Route::resource('settings', 'BranchSettingsController')"
+      - "Route::get('markups', 'BranchSettingsController@markups')"
+      - "Route::post('markups', 'BranchSettingsController@updateMarkups')"
+      
+  report_routes: # routes/reports.php
+    prefix: "admin/reports"
+    middleware: ["auth", "role:company_admin,branch_admin"]
+    routes:
+      - "Route::get('branch/dashboard', 'BranchReportController@dashboard')"
+      - "Route::get('branch/performance', 'BranchReportController@shipmentStats')"
+      - "Route::get('branch/revenue', 'BranchReportController@revenueReport')"
+
+# =================================================================
+# INTEGRATION FEATURES
+# =================================================================
+integration_specifications:
+  user_module_integration:
+    implementation: "Service-based integration with shared context"
+    relationship: "Branches have many users"
+    access_control: "Branch-aware user management"
+    
+  shipper_module_integration:
+    implementation: "Service layer for markup calculation"
+    purpose: "Real-time markup calculation during quote generation"
+    flow: "Shipper calls BranchService to apply markup to quotes"
+    
+  customer_module_integration:
+    implementation: "Shared customer database with branch-specific preferences"
+    data_sharing: "Cross-branch customer access with branch context"
+    
+  audit_integration:
+    tracking: "Log all branch management and markup changes"
+    compliance: "Maintain audit trail for business operations"
+
+# =================================================================
+# FILE STRUCTURE
+# =================================================================
+file_structure:
+  controllers:
+    - "Http/Controllers/BranchAdminController.php"
+    - "Http/Controllers/BranchSettingsController.php"
+    - "Http/Controllers/BranchReportController.php"
+    
+  repositories:
+    - "Repositories/Contracts/BranchRepositoryInterface.php"
+    - "Repositories/Eloquent/BranchRepository.php"
+    
+  models:
+    - "Entities/Branch.php"
+    - "Entities/BranchMarkup.php"
+    - "Entities/BranchReport.php"
+    
+  services:
+    - "Services/BranchService.php"
+    - "Services/MarkupCalculationService.php"
+    
+  middleware:
+    - "Http/Middleware/BranchIsolationMiddleware.php"
+    - "Http/Middleware/BranchScopeMiddleware.php"
+    
+  views:
+    admin:
+      - "Resources/views/admin/branches/index.blade.php"
+      - "Resources/views/admin/branches/create.blade.php"
+      - "Resources/views/admin/branches/edit.blade.php"
+      - "Resources/views/admin/branches/show.blade.php"
+      - "Resources/views/admin/branches/markups.blade.php"
+    settings:
+      - "Resources/views/branch/settings/index.blade.php"
+      - "Resources/views/branch/settings/edit.blade.php"
+      - "Resources/views/branch/settings/markups.blade.php"
+    reports:
+      - "Resources/views/reports/branch/dashboard.blade.php"
+      - "Resources/views/reports/branch/performance.blade.php"
+      
+  routes:
+    - "Routes/admin.php"
+    - "Routes/branch.php"
+    - "Routes/reports.php"
+    
+  migrations:
+    - "Database/Migrations/xxxx_create_branches_table.php"
+    - "Database/Migrations/xxxx_create_branch_markups_table.php"
+    - "Database/Migrations/xxxx_create_branch_reports_table.php"
+
+# =================================================================
+# SPECIFICATION SUMMARY
+# =================================================================
+specification_summary:
+  total_controllers: 3
+  total_models: 3
+  total_repositories: 1
+  total_services: 2
+  total_middleware: 2
+  total_views: 11
+  total_routes: 3 files
+  
+  key_features:
+    - "3 specialized controllers for different access levels"
+    - "Complete branch isolation with model scopes"
+    - "Simple fixed percentage markup system"
+    - "Basic performance tracking and reporting"
+    - "Service layer for markup calculation"
+    - "Grid interface for bulk markup editing"
+    - "Role-based branch access control"
+
+# =================================================================
+# STATUS: READY FOR CODE GENERATION
+# =================================================================
+generation_readiness:
+  requirements_complete: true
+  user_answers_integrated: true
+  technical_details_specified: true
+  architecture_defined: true
+  ready_for_stage_6: true

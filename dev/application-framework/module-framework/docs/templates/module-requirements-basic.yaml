@@ -1,0 +1,109 @@
+# =================================================================
+# MODULE REQUIREMENTS - [MODULE NAME]
+# =================================================================
+# Fill out this template with your module requirements
+# =================================================================
+
+# BASIC MODULE INFO
+module_folder: "[ModuleName]"           # e.g. "Product", "Customer", "Order"
+output_organization: true
+application_name: "[ApplicationName]"   # e.g. "ShipCentral", "EcommStore"
+
+# USER REQUIREMENT - Describe what you want this module to do
+user_requirement: |
+  [Describe your module requirements in detail]
+  
+  [What is the main purpose of this module?]
+  
+  [What features do you need?]
+  
+  [What data does it manage?]
+  
+  [Who uses this module and how?]
+  
+  [Any specific business rules or validation?]
+  
+  [Integration with other modules needed?]
+
+# TECHNICAL PREFERENCES (Optional - AI will ask if not specified)
+technical_preferences:
+  framework: "[Laravel version or 'latest']"        # e.g. "Laravel 8.12", "Laravel 10.x"
+  frontend: "[Frontend approach or 'standard']"     # e.g. "Blade + jQuery", "Blade + Alpine.js"
+  database: "[Database or 'mysql']"                 # e.g. "MySQL", "PostgreSQL"
+  architecture: "[Pattern or 'repository']"         # e.g. "Repository pattern", "Simple MVC"
+
+# CONTROLLER NAMING (Optional - will use standard pattern if not specified)
+controller_pattern: "[ModuleName]AdminController"   # e.g. "ProductAdminController"
+
+# EXAMPLE FILLED OUT:
+# =================================================================
+# module_folder: "Product"
+# application_name: "ShipCentral"
+# 
+# user_requirement: |
+#   I need a Product module for managing add-on services and supplies.
+#   
+#   Features needed:
+#   - Manage product catalog (boxes, labels, packaging supplies)
+#   - Set base prices for products
+#   - Allow branch-specific pricing overrides
+#   - Track inventory levels per branch
+#   - Integration with shipping operations
+#   
+#   Business rules:
+#   - Only company admins can manage base products
+#   - Branch admins can set their own pricing
+#   - Products must have categories (box, label, supply)
+#   - Pricing can be percentage markup or fixed amount
+#   
+#   User interface:
+#   - DataTable listing with search/filter
+#   - Add/edit form with image upload
+#   - Pricing management interface
+#   - Inventory tracking display
+#
+# technical_preferences:
+#   framework: "Laravel 8.12"
+#   frontend: "Blade + jQuery"
+#   database: "MySQL"
+#   architecture: "Repository pattern"
+#
+# controller_pattern: "ProductAdminController"
+# =================================================================
+
+# =================================================================
+# INSTRUCTIONS:
+# 1. Replace [placeholders] with your actual requirements
+# 2. Fill out the user_requirement section in detail
+# 3. Specify technical preferences if you have specific needs
+# 4. Save this file as: modules/[app-name]/[module-name]/module-requirements-basic.yaml
+# 5. Send to AI with instructions/new-module.md
+# =================================================================
+
+# =================================================================
+# FILE ORGANIZATION:
+# This file should be saved at:
+# dev/module-framework/modules/[application-name]/[module-name]/module-requirements-basic.yaml
+# 
+# Example paths:
+# dev/module-framework/modules/shipcentral/product/module-requirements-basic.yaml
+# dev/module-framework/modules/myblog/post/module-requirements-basic.yaml
+# dev/module-framework/modules/ecommerce/category/module-requirements-basic.yaml
+# =================================================================
+
+# =================================================================
+# AI INSTRUCTIONS - FOLLOW EXACTLY:
+# 1. READ: /dev/module-framework/docs/ai-instructions.md (COMPLETE WORKFLOW)
+# 2. ANALYZE: /Modules/User/ (use as pattern)
+# 3. PARSE: Requirements above
+# 4. CREATE: module-questions.yaml (YAML format, follow ai-instructions.md examples)
+# 5. WAIT: For user answers before proceeding
+# 6. CREATE: module-specification-detailed.yaml (detailed specs)
+# 7. READ CORE COMPONENTS: /dev/module-framework/docs/core-components-guide.md
+# 8. ANALYZE: AdminController.php, Helper.php, layouts/, html/ patterns
+# 9. GENERATE: Working module code in /Modules/Product/
+# 
+# CRITICAL: Follow ai-instructions.md workflow exactly - use YAML formats as shown
+# MUST read core-components-guide.md before generating any code!
+# NOTE: See /dev/module-framework/examples/ for detailed requirements examples
+# ================================================================= 

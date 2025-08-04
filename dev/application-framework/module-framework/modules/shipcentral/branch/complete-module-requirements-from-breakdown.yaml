@@ -1,0 +1,202 @@
+# =================================================================
+# BRANCH MODULE REQUIREMENTS - FROM MODULE BREAKDOWN
+# =================================================================
+# Generated from 07-module-breakdown-planning.yaml using improved template
+# STATUS: COMPLETE DATA TRANSFER FROM BREAKDOWN
+# =================================================================
+
+# BASIC MODULE INFO (from module breakdown)
+module_folder: "Branch"
+output_organization: true
+application_name: "ShipCentral"
+module_type: "CREATE NEW"
+
+# APPLICATION CONTEXT (transfer from breakdown)
+application_context:
+  application_name: "ShipCentral"
+  business_domain: "Multi-branch shipping and logistics management"
+  module_role: "Manage different shipping branches with isolated operations and custom markup rules"
+  integration_with: ["User", "Customer", "Shipment", "Shipper", "Audit"]
+  technology_stack:
+    framework: "Laravel 8.12"
+    frontend: "Blade + jQuery"
+    database: "MariaDB"
+    ui: "Bootstrap 5 + DataTables"
+    architecture: "Modular (nwidart/laravel-modules)"
+
+# TRANSFER COMPLETE MODULE BREAKDOWN DATA
+module_breakdown_transfer:
+  # COPIED EXACTLY from 07-module-breakdown-planning.yaml
+  core_features: |
+    - Branch registration and configuration
+    - Rate markup management per shipper
+    - Branch performance tracking
+    - Branch isolation enforcement
+  
+  controllers_needed: |
+    - BranchAdminController: Company admin manages branches
+    - BranchSettingsController: Branch admin manages own settings
+    - BranchReportController: Branch performance and analytics
+    
+  models_needed: |
+    - Branch: Branch details and configuration
+    - BranchMarkup: Markup rules per branch per shipper
+    - BranchReport: Performance analytics
+    
+  business_purpose: |
+    Manage different shipping branches with isolated operations and custom markup rules
+    
+# USER REQUIREMENT (enhanced with breakdown data)
+user_requirement: |
+  Create comprehensive Branch module for ShipCentral's multi-branch operations based on module breakdown specifications.
+  
+  **Business Context:** 
+  Manage different shipping branches with isolated operations and custom markup rules for multi-branch shipping business.
+  
+  **Core Features:**
+  - Branch registration and configuration
+  - Rate markup management per shipper
+  - Branch performance tracking
+  - Branch isolation enforcement
+  
+  **Controllers Required:**
+  - BranchAdminController: Company admin manages branches
+  - BranchSettingsController: Branch admin manages own settings
+  - BranchReportController: Branch performance and analytics
+  
+  **Models Required:**
+  - Branch: Branch details and configuration
+  - BranchMarkup: Markup rules per branch per shipper
+  - BranchReport: Performance analytics
+  
+  **Integration Requirements:**
+  - Depends on: User
+  - Affects: Customer, Shipment, Shipper, Audit
+
+# TECHNICAL PREFERENCES (from Step 6)
+technical_preferences:
+  framework: "Laravel 8.12"
+  frontend: "Blade + jQuery"
+  database: "MariaDB"
+  architecture: "Repository pattern"
+
+# CONTROLLER PATTERN (from breakdown)
+controller_pattern: "BranchAdminController"
+
+# DEVELOPMENT INFO (from breakdown)
+development_info:
+  priority: "CRITICAL - Phase 1"
+  development_estimate: "2-3 weeks"
+  dependencies: ["User"]
+  affects: ["Customer", "Shipment", "Shipper", "Audit"]
+  phase: "Foundation Modules (Phase 1 - Essential Infrastructure)"
+
+# =================================================================
+# DETAILED CONTROLLER SPECIFICATIONS
+# =================================================================
+# Based on module breakdown, these controllers MUST be generated:
+
+controller_specifications:
+  BranchAdminController:
+    purpose: "Company admin manages all branches and configurations"
+    access_level: "Company Admin only"
+    methods_required:
+      - "index(): List all branches with status"
+      - "create(): Add new branch"
+      - "store(): Save new branch configuration"
+      - "show(): View branch details and performance"
+      - "edit(): Edit branch information"
+      - "update(): Update branch data"
+      - "destroy(): Deactivate branch"
+      - "activate(): Activate/deactivate branch"
+      - "viewMarkups(): View branch markup rules"
+      
+  BranchSettingsController:
+    purpose: "Branch admin manages their own branch settings only"
+    access_level: "Branch Admin for own branch"
+    methods_required:
+      - "index(): View current branch settings"
+      - "edit(): Edit own branch settings"
+      - "update(): Update own branch settings"
+      - "markups(): Manage markup rules for carriers"
+      - "updateMarkups(): Update carrier markups"
+      - "profile(): Branch profile management"
+      
+  BranchReportController:
+    purpose: "Branch performance and analytics reporting"
+    access_level: "Company Admin (all branches) / Branch Admin (own branch)"
+    methods_required:
+      - "dashboard(): Branch performance dashboard"
+      - "shipmentStats(): Shipment statistics"
+      - "revenueReport(): Revenue and markup analysis"
+      - "carrierPerformance(): Carrier usage by branch"
+      - "export(): Export branch reports"
+
+# =================================================================
+# DETAILED MODEL SPECIFICATIONS
+# =================================================================
+# Based on module breakdown, these models MUST be generated:
+
+model_specifications:
+  Branch:
+    purpose: "Branch details and configuration"
+    relationships:
+      - "hasMany User"
+      - "hasMany BranchMarkup"
+      - "hasMany BranchReport"
+      - "hasMany Shipment"
+      
+  BranchMarkup:
+    purpose: "Markup rules per branch per shipper"
+    relationships:
+      - "belongsTo Branch"
+      - "belongsTo Shipper"
+      
+  BranchReport:
+    purpose: "Performance analytics per branch"
+    relationships:
+      - "belongsTo Branch"
+      - "belongsTo User (created_by)"
+
+# =================================================================
+# BRANCH ISOLATION SPECIFICATIONS
+# =================================================================
+# Based on module breakdown, this system MUST be implemented:
+
+branch_isolation_system:
+  data_isolation:
+    description: "Ensure branch data separation"
+    requirements:
+      - "Users can only access their assigned branch data"
+      - "Shipments are isolated by branch"
+      - "Customers can be shared but access controlled"
+      - "Reports filtered by branch automatically"
+    
+  markup_system:
+    description: "Branch-specific carrier markup rules"
+    requirements:
+      - "Each branch sets own markup per carrier"
+      - "Real-time markup calculation"
+      - "Markup history tracking"
+      - "Override capabilities for special cases"
+    
+  performance_tracking:
+    description: "Branch performance analytics"
+    requirements:
+      - "Shipment volume tracking"
+      - "Revenue calculation with markups"
+      - "Carrier usage analytics"
+      - "Performance comparisons"
+
+# =================================================================
+# CRITICAL: AI INSTRUCTIONS FOR COMPLETE GENERATION
+# =================================================================
+# When AI processes this file, it MUST:
+# 1. Generate ALL 3 controllers with branch isolation logic
+# 2. Generate ALL 3 models with proper relationships
+# 3. Implement branch isolation throughout the system
+# 4. Create markup management system
+# 5. Implement performance tracking
+# 6. Add branch-aware middleware for access control
+# 7. Ensure integration points with User module
+# ================================================================= 

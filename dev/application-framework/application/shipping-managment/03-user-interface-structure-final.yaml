@@ -1,0 +1,381 @@
+# USER INTERFACE STRUCTURE - SHIPCENTRAL (FINAL)
+# COMPLETE NAVIGATION HIERARCHY: Main Menu → Submenu → Main Page → Sub Page → Sections/Tabs → Features
+# STATUS: FINALIZED BASED ON ALL USER FEEDBACK AND CLARIFICATIONS
+
+## 📋 **NAVIGATION HIERARCHY DEFINITIONS:**
+
+### **6-Level Navigation Structure:**
+1. **Main Menu** - Top level navigation (Dashboard, Branches, Users, etc.)
+2. **Submenu** - Second level under main menu (Company Overview, Branch List, etc.)
+3. **Main Page** - Primary webpage linked to submenu (/admin/branches/list)
+4. **Sub Page** - Secondary pages from main page (/admin/branches/add)
+5. **Sections/Tabs** - Organization within pages (DataTable section, Form section)
+6. **Features** - Specific functionality (DataTable, Form, Chart, etc.)
+
+### **URL Pattern Structure:**
+- **Company Admin:** `/admin/{submenu}/{action}/{id?}`
+- **Branch Admin:** `/branch-admin/{submenu}/{action}/{id?}`
+- **Branch Staff:** `/staff/{submenu}/{action}/{id?}`
+
+### **User Role Definitions:**
+- **Company Admin:** Multi-branch oversight, system configuration, user management
+- **Branch Admin:** Single branch management, staff oversight, local operations
+- **Branch Staff:** Daily operations, shipment creation, customer service
+
+### **Business Model Context (Final):**
+- **Three-Person Transaction:** Customer (pays) → Sender (ships) → Receiver (receives)
+- **API Integration:** Real-time FedEx, DHL, UPS rate quotes every submission
+- **Data Centralization:** Customer/Sender/Receiver data shared across all branches
+- **Pricing:** Fixed amount + percentage markup per shipper, retail rates per customer
+- **Products:** Add-on costs only (no inventory tracking)
+- **Billing:** Monthly Excel export, manual invoice processing
+- **Labels:** Browser printing from shipper API image URLs
+- **Audit:** Full compliance tracking for pricing, users, shipments
+
+### **Final Structure Changes:**
+- ✅ Finalized: Branch Settings removed, focus on core operations
+- ✅ Finalized: Product Types moved under Shippers menu
+- ✅ Finalized: Simplified product management (add-ons only)
+- ✅ Finalized: Enhanced compliance and audit features
+- ✅ Finalized: Real-time API integration approach
+
+## 🏢 **COMPANY ADMIN NAVIGATION STRUCTURE:**
+
+### **Main Menu: Dashboard**
+```
+Dashboard (main menu)
+├── Company Overview (submenu) → Main Page: /admin/dashboard/overview
+│   ├── Performance Section (tab)
+│   │   └── Feature: Multi-branch performance charts, KPI cards, alerts
+│   ├── Branch Comparison Section (tab)
+│   │   └── Feature: Side-by-side branch comparison datatable
+│   └── Financial Overview Section (tab)
+│       └── Feature: Revenue charts, profit summary, cost analysis
+│
+└── System Health (submenu) → Main Page: /admin/dashboard/health
+    ├── API Status Section (tab)
+    │   └── Feature: Shipper API connection status cards, response time charts
+    ├── System Alerts Section (tab)
+    │   └── Feature: Alert datatable with priority, timestamp, resolution status
+    └── Performance Metrics Section (tab)
+        └── Feature: System performance charts, server metrics, user activity
+```
+
+### **Main Menu: Branches**
+```
+Branches (main menu)
+└── Branch Management (submenu) → Main Page: /admin/branches/list
+    ├── Branch DataTable Section
+    │   └── Feature: Branch datatable with columns (name, address, status, actions)
+    │   └── Actions: [Edit] [Rate] [Product] buttons per row
+    └── Sub Pages:
+        ├── Branch Add → /admin/branches/add
+        │   └── Feature: Branch creation form (name, address, contact)
+        ├── Branch Edit → /admin/branches/edit/{id}
+        │   └── Feature: Branch edit form with save/cancel buttons
+        ├── Branch Rate → /admin/branches/rate/{id}
+        │   ├── Markup Configuration Section (tab)
+        │   │   └── Feature: Shipper markup form (FedEx %, DHL %, UPS % + fixed amounts)
+        │   └── Retail Rate Section (tab)
+        │       └── Feature: Customer retail rate form by shipper
+        └── Branch Product → /admin/branches/product/{id}
+            └── Feature: Branch add-on product datatable (boxes, labels, supplies pricing only)
+```
+
+### **Main Menu: Shippers**
+```
+Shippers (main menu)
+├── Shipper Management (submenu) → Main Page: /admin/shippers/list
+│   ├── Shipper DataTable Section
+│   │   └── Feature: Shipper datatable (FedEx, DHL, UPS with status, config, actions)
+│   │   └── Actions: [Edit] [API Config] [Rate] [Test] buttons per row
+│   └── Sub Pages:
+│       ├── Shipper Add → /admin/shippers/add
+│       │   └── Feature: Shipper creation form (name, type, basic config)
+│       ├── Shipper Edit → /admin/shippers/edit/{id}
+│       │   ├── Basic Info Section (tab)
+│       │   │   └── Feature: Shipper basic information form
+│       │   ├── API Configuration Section (tab)
+│       │   │   └── Feature: API credentials form (endpoint, key, secret)
+│       │   └── Connection Test Section (tab)
+│       │       └── Feature: API connection test with status display
+│       └── Shipper Rate → /admin/shippers/rate/{id}
+│           └── Feature: Base rate configuration form for shipper
+│
+└── Product Types (submenu) → Main Page: /admin/shippers/product-types
+    ├── Product Type DataTable Section
+    │   └── Feature: Simple product type datatable (food, clothes, glass, electronics, etc.)
+    │   └── Actions: [Edit] [Delete] buttons per row
+    └── Sub Pages:
+        ├── Product Type Add → /admin/shippers/product-types/add
+        │   └── Feature: Simple product type creation form (name, description)
+        └── Product Type Edit → /admin/shippers/product-types/edit/{id}
+            └── Feature: Basic product type information form (simplified)
+```
+
+### **Main Menu: Users**
+```
+Users (main menu)
+└── User Management (submenu) → Main Page: /admin/users/list
+    ├── User DataTable Section
+    │   └── Feature: Multi-branch user datatable (name, role, branch, status, last login)
+    │   └── Actions: [Edit] [Permissions] [Activity] [Reset Password] buttons per row
+    └── Sub Pages:
+        ├── User Add → /admin/users/add
+        │   └── Feature: User creation form (name, email, role, branch assignment)
+        ├── User Edit → /admin/users/edit/{id}
+        │   ├── Basic Info Section (tab)
+        │   │   └── Feature: User basic information form
+        │   ├── Role Assignment Section (tab)
+        │   │   └── Feature: Role selection and branch assignment form
+        │   ├── Permissions Section (tab)
+        │   │   └── Feature: Permission matrix with checkboxes
+        │   └── Activity Log Section (tab)
+        │       └── Feature: User activity datatable with timestamps (compliance requirement)
+        └── User Permissions → /admin/users/permissions/{id}
+            └── Feature: Detailed permission management form by feature
+```
+
+### **Main Menu: Reports**
+```
+Reports (main menu)
+├── Multi-Branch Reports (submenu) → Main Page: /admin/reports/branches
+│   ├── Performance Analytics Section (tab)
+│   │   └── Feature: Branch comparison charts, performance metrics
+│   ├── Profit Analysis Section (tab)
+│   │   └── Feature: Profit breakdown charts by branch and shipper
+│   └── Export Functions Section (tab)
+│       └── Feature: Export forms with date range, format selection
+│
+└── Billing Management (submenu) → Main Page: /admin/reports/billing
+    ├── Monthly Summary Section (tab)
+    │   └── Feature: Monthly billing summary for Excel export
+    ├── Export Functions Section (tab)
+    │   └── Feature: Excel export with custom date ranges and formats
+    └── Audit Reports Section (tab)
+        └── Feature: Compliance audit reports (pricing changes, user actions, shipments)
+```
+
+### **Main Menu: Audit**
+```
+Audit (main menu)
+└── Compliance Tracking (submenu) → Main Page: /admin/audit/activities
+    ├── Pricing Changes Section (tab)
+    │   └── Feature: All pricing changes datatable with timestamps and user tracking
+    ├── User Activities Section (tab)
+    │   └── Feature: Complete user action log datatable with filtering
+    ├── Shipment Tracking Section (tab)
+    │   └── Feature: All shipment activities with compliance data
+    └── Export Functions Section (tab)
+        └── Feature: Compliance export tools for regulatory requirements
+```
+
+## 🏢 **BRANCH ADMIN NAVIGATION STRUCTURE:**
+
+### **Main Menu: Dashboard**
+```
+Dashboard (main menu)
+└── Branch Overview (submenu) → Main Page: /branch-admin/dashboard/overview
+    ├── Today's Performance Section (tab)
+    │   └── Feature: Daily KPI cards, revenue summary, shipment count
+    ├── Staff Performance Section (tab)
+    │   └── Feature: Staff activity summary, productivity metrics
+    └── Branch Metrics Section (tab)
+        └── Feature: Branch-specific charts and performance indicators
+```
+
+### **Main Menu: Staff**
+```
+Staff (main menu)
+└── Staff Management (submenu) → Main Page: /branch-admin/staff/list
+    ├── Staff DataTable Section
+    │   └── Feature: Branch staff datatable (name, role, status, last login, actions)
+    │   └── Actions: [Edit] [Permissions] [Activity] buttons per row
+    └── Sub Pages:
+        ├── Staff Add → /branch-admin/staff/add
+        │   └── Feature: Staff creation form (name, email, role - branch pre-selected)
+        ├── Staff Edit → /branch-admin/staff/edit/{id}
+        │   ├── Basic Info Section (tab)
+        │   │   └── Feature: Staff basic information form
+        │   ├── Permissions Section (tab)
+        │   │   └── Feature: Staff permission assignment form
+        │   └── Activity Log Section (tab)
+        │       └── Feature: Staff activity tracking datatable
+        └── Staff Activity → /branch-admin/staff/activity/{id}
+            └── Feature: Detailed staff activity and performance tracking
+```
+
+### **Main Menu: Products**
+```
+Products (main menu)
+└── Branch Products (submenu) → Main Page: /branch-admin/products/list
+    ├── Add-on Products Section (tab)
+    │   └── Feature: Branch-specific add-on products datatable (boxes, labels, supplies)
+    │   └── Actions: [Edit Price] [Toggle Status] buttons per row
+    └── Sub Pages:
+        └── Product Price → /branch-admin/products/price/{id}
+            └── Feature: Branch-specific pricing form for add-on products
+```
+
+### **Main Menu: Customers**
+```
+Customers (main menu)
+└── Customer Management (submenu) → Main Page: /branch-admin/customers/list
+    ├── All Customers Section (tab)
+    │   └── Feature: All customers datatable (shared across branches)
+    │   └── Actions: [View] [History] [Add Shipment] buttons per row
+    ├── Branch Customers Section (tab)
+    │   └── Feature: Customers who have shipped from this branch
+    └── Sub Pages:
+        ├── Customer View → /branch-admin/customers/view/{id}
+        │   ├── Customer Info Section (tab)
+        │   │   └── Feature: Customer information display
+        │   ├── Shipment History Section (tab)
+        │   │   └── Feature: Customer shipment history datatable
+        │   └── Branch Activity Section (tab)
+        │       └── Feature: Customer activity specific to this branch
+        └── Customer History → /branch-admin/customers/history/{id}
+            └── Feature: Complete customer transaction history
+```
+
+### **Main Menu: Shipments**
+```
+Shipments (main menu)
+└── Shipment Management (submenu) → Main Page: /branch-admin/shipments/list
+    ├── All Shipments Section (tab)
+    │   └── Feature: Branch shipments datatable with status, tracking, actions
+    │   └── Actions: [View] [Track] [Print Label] [Edit] buttons per row
+    ├── Today's Shipments Section (tab)
+    │   └── Feature: Today's shipments with quick actions
+    └── Sub Pages:
+        ├── Shipment View → /branch-admin/shipments/view/{id}
+        │   ├── Shipment Details Section (tab)
+        │   │   └── Feature: Complete shipment information display
+        │   ├── Tracking History Section (tab)
+        │   │   └── Feature: Shipment tracking timeline
+        │   └── Documents Section (tab)
+        │       └── Feature: Labels, receipts, and shipping documents
+        └── Shipment Track → /branch-admin/shipments/track/{id}
+            └── Feature: Real-time tracking information and status updates
+```
+
+### **Main Menu: Reports**
+```
+Reports (main menu)
+└── Branch Reports (submenu) → Main Page: /branch-admin/reports/performance
+    ├── Performance Analytics Section (tab)
+    │   └── Feature: Branch performance charts and metrics
+    ├── Staff Reports Section (tab)
+    │   └── Feature: Staff productivity and performance reports
+    └── Export Functions Section (tab)
+        └── Feature: Branch-specific export tools
+```
+
+## 👥 **BRANCH STAFF NAVIGATION STRUCTURE:**
+
+### **Main Menu: Shipments**
+```
+Shipments (main menu)
+└── Create Shipment (submenu) → Main Page: /staff/shipments/create
+    ├── Shipment Creation Form Section
+    │   └── Feature: Multi-step shipment creation form
+    │   └── Steps: Customer → Sender → Receiver → Package → Quote → Payment
+    ├── Quick Repeat Section
+    │   └── Feature: Repeat previous shipment functionality
+    └── Recent Shipments Section
+        └── Feature: Staff's recent shipments datatable
+```
+
+### **Main Menu: Print Center**
+```
+Print Center (main menu)
+└── Label Management (submenu) → Main Page: /staff/print/labels
+    ├── Print Queue Section (tab)
+    │   └── Feature: Pending labels datatable with batch printing
+    ├── Printed Labels Section (tab)
+    │   └── Feature: Previously printed labels with reprint option
+    └── Bulk Operations Section (tab)
+        └── Feature: Bulk label generation and printing tools
+```
+
+### **Main Menu: Customers**
+```
+Customers (main menu)
+└── Customer Search (submenu) → Main Page: /staff/customers/search
+    ├── Customer Search Section
+    │   └── Feature: Advanced customer search with autocomplete
+    ├── Quick Add Section
+    │   └── Feature: Quick customer creation form
+    └── Recent Customers Section
+        └── Feature: Staff's recently accessed customers
+```
+
+### **Main Menu: Tools**
+```
+Tools (main menu)
+├── Package Calculator (submenu) → Main Page: /staff/tools/calculator
+│   ├── Weight Calculator Section (tab)
+│   │   └── Feature: Package weight and dimension calculator
+│   ├── Rate Calculator Section (tab)
+│   │   └── Feature: Quick rate calculation tool
+│   └── Cost Estimator Section (tab)
+│       └── Feature: Shipping cost estimation with markup
+│
+└── Address Validator (submenu) → Main Page: /staff/tools/validator
+    ├── Address Validation Section (tab)
+    │   └── Feature: Address validation and standardization tool
+    └── Postal Code Lookup Section (tab)
+        └── Feature: Postal code and zone lookup tool
+```
+
+### **Main Menu: Products**
+```
+Products (main menu)
+└── Add-on Products (submenu) → Main Page: /staff/products/list
+    ├── Available Products Section (tab)
+    │   └── Feature: Available add-on products with pricing
+    └── Product Search Section (tab)
+        └── Feature: Product search and selection for shipments
+```
+
+### **Main Menu: My Work**
+```
+My Work (main menu)
+└── Personal Dashboard (submenu) → Main Page: /staff/dashboard/personal
+    ├── Today's Summary Section (tab)
+    │   └── Feature: Personal productivity metrics and daily summary
+    ├── Pending Tasks Section (tab)
+    │   └── Feature: Personal task list and pending shipments
+    └── Performance Section (tab)
+        └── Feature: Personal performance tracking and goals
+```
+
+## 📊 **NAVIGATION SUMMARY:**
+
+### **Total Pages Count:**
+- **Company Admin Pages:** 45 unique pages across 6 main menus
+- **Branch Admin Pages:** 35 unique pages across 6 main menus  
+- **Branch Staff Pages:** 25 unique pages across 6 main menus
+
+### **Key Features Implemented:**
+- ✅ Real-time API integration for quotes and tracking
+- ✅ Three-person transaction model (Customer → Sender → Receiver)
+- ✅ Centralized customer database shared across branches
+- ✅ Branch-specific markup and retail pricing
+- ✅ Add-on product management (no inventory)
+- ✅ Monthly Excel export for billing
+- ✅ Complete compliance and audit tracking
+- ✅ Role-based access with branch isolation
+
+### **Business Model Alignment:**
+- ✅ Fixed amount + percentage markup pricing structure
+- ✅ Real-time shipper API integration (FedEx, DHL, UPS)
+- ✅ Manual billing with Excel export capability
+- ✅ Browser-based label printing from API image URLs
+- ✅ Compliance tracking for regulatory requirements
+
+## ✅ **FINAL STRUCTURE STATUS:**
+
+The navigation structure is now finalized and ready for technical implementation planning. All user feedback has been incorporated, and the structure aligns with the confirmed business model and technical requirements.
+
+**Next Step:** Proceed to **Step 4: Business Function Mapping** to map this UI structure to specific business logic and technical implementation details. 

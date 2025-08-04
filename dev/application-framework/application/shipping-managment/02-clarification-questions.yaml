@@ -1,0 +1,68 @@
+# CLARIFICATION QUESTIONS - SHIPCENTRAL
+application_context:
+  name: "ShipCentral"
+  complexity_level: "complex"
+  
+business_workflow_questions:
+  question_1:
+    topic: "Shipper API Integration"
+    question: "Do you need real-time rate calculations from shipper APIs for every quote, or can you work with cached daily rates?"
+    why_important: "Affects API integration module design and performance requirements"
+    user_answer: "yes we need to call to api and get rate every time when user submit package"  # ANSWER HERE: real_time | cached_daily | both
+  
+  question_2:
+    topic: "Markup Configuration"
+    question: "Will markup rules be percentage-based, fixed amounts, or both? Do markups vary by package weight/size/destination?"
+    why_important: "Determines pricing calculation module complexity and database structure"
+    user_answer: "will fixed amount and percentage. and when we setup this markup as admin will set up for each shiper. and we will set up retail rate for customer of each shipper too."  # ANSWER HERE: percentage | fixed_amount | both + weight_based: yes/no
+  
+  question_3:
+    topic: "Branch Inventory Management"
+    question: "Do branches need to track their own inventory of supplies (boxes, labels, packaging) with low-stock alerts?"
+    why_important: "Affects whether we need separate inventory management module or integrate with shipping operations"
+    user_answer: "no. product is only use to calculate add on to shipping cost. branch's user will add to shipment transction during input data"  # ANSWER HERE: yes | no + details if yes
+
+  question_4:
+    topic: "Customer Data Management"
+    question: "Should sender/receiver data be shared across all branches or kept separate per branch? Do you need customer history across multiple shipments?"
+    why_important: "Impacts customer management module design and data privacy/security architecture"
+    user_answer: "both will store centralize in one place and share across all branch"  # ANSWER HERE: shared | separate + history: yes/no
+
+  question_5:
+    topic: "Financial Reporting & Billing"
+    question: "How do branches pay your company? (monthly billing, pre-payment, credit system) Do you need to track payment status and credit limits?"
+    why_important: "Determines if we need billing/payment modules and financial tracking features"
+    user_answer: "system will summary report and export to excel by end of the month and process to invoice will manually"  # ANSWER HERE: monthly_billing | prepayment | credit_system + tracking: yes/no
+
+technical_questions:
+  question_1:
+    topic: "Label Generation"
+    question: "Do you need to generate shipping labels directly through shipper APIs, or will you use separate label printing systems?"
+    why_important: "Affects API integration complexity and printing module requirements"
+    user_answer: "label will image url issue by shipper api what we need to do is read and past to printer via browser"  # ANSWER HERE: direct_api | separate_system | both
+
+  question_2:
+    topic: "Branch Performance Visibility"
+    question: "Should branch admins be able to see other branches' performance for comparison, or strictly isolated access?"
+    why_important: "Impacts user permission design and reporting module architecture"
+    user_answer: "now, each branch can see only their own branch performance"  # ANSWER HERE: can_see_others | isolated_only + details
+
+  question_3:
+    topic: "Audit & Compliance"
+    question: "Do you need detailed audit trails for all pricing changes, user actions, and shipment activities for compliance purposes?"
+    why_important: "Determines if we need dedicated audit logging module and compliance reporting features"
+    user_answer: "yes we need to track all pricing changes, user actions, and shipment activities for compliance purposes"  # ANSWER HERE: yes | no + compliance_requirements if yes
+
+# =================================================================
+# HOW TO ANSWER:
+# 1. Fill in the "user_answer" fields above with your responses
+# 2. You can write simple words or longer explanations
+# 3. Example:
+#    user_answer: "real_time - we need instant rates for accurate pricing"
+#    user_answer: "both - percentage for standard, fixed for special deals"
+# 4. Save this file when done
+# 5. Let me know you've completed the answers
+# =================================================================
+
+# AI NOTE: 8 questions total covering critical business and technical decisions
+# WAITING FOR USER ANSWERS BEFORE PROCEEDING TO MODULE PROPOSAL 

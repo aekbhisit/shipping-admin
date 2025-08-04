@@ -1,0 +1,299 @@
+# =================================================================
+# AUDIT MODULE REQUIREMENTS - FROM MODULE BREAKDOWN
+# =================================================================
+# Generated from 07-module-breakdown-planning.yaml using improved template
+# STATUS: COMPLETE DATA TRANSFER FROM BREAKDOWN
+# =================================================================
+
+# BASIC MODULE INFO (from module breakdown)
+module_folder: "Audit"
+output_organization: true
+application_name: "ShipCentral"
+module_type: "CREATE NEW"
+
+# APPLICATION CONTEXT (transfer from breakdown)
+application_context:
+  application_name: "ShipCentral"
+  business_domain: "Multi-branch shipping and logistics management"
+  module_role: "Track all changes for shipping compliance and provide complete audit history"
+  integration_with: ["User", "Branch", "Shipment", "Customer", "Shipper", "Product"]
+  technology_stack:
+    framework: "Laravel 8.12"
+    frontend: "Blade + jQuery"
+    database: "MariaDB with audit tables"
+    ui: "Bootstrap 5 + DataTables"
+    architecture: "Modular (nwidart/laravel-modules)"
+
+# TRANSFER COMPLETE MODULE BREAKDOWN DATA
+module_breakdown_transfer:
+  # COPIED EXACTLY from 07-module-breakdown-planning.yaml
+  core_features: |
+    - Complete change tracking for all modules
+    - User action logging
+    - Data modification history
+    - Compliance reporting
+    - Security audit trails
+  
+  controllers_needed: |
+    - AuditAdminController: Company admin audit management
+    - AuditReportController: Generate compliance reports
+    - AuditLogController: View audit logs and history
+    
+  models_needed: |
+    - AuditLog: Complete audit trail records
+    - UserAction: User activity tracking
+    - DataChange: Data modification history
+    - ComplianceReport: Regulatory compliance tracking
+    
+  business_purpose: |
+    Track all changes for shipping compliance and provide complete audit history
+    
+# USER REQUIREMENT (enhanced with breakdown data)
+user_requirement: |
+  Create comprehensive Audit module for ShipCentral's compliance tracking and audit trails based on module breakdown specifications.
+  
+  **Business Context:** 
+  Track all changes for shipping compliance and provide complete audit history for regulatory requirements.
+  
+  **Core Features:**
+  - Complete change tracking for all modules
+  - User action logging
+  - Data modification history
+  - Compliance reporting
+  - Security audit trails
+  
+  **Controllers Required:**
+  - AuditAdminController: Company admin audit management
+  - AuditReportController: Generate compliance reports
+  - AuditLogController: View audit logs and history
+  
+  **Models Required:**
+  - AuditLog: Complete audit trail records
+  - UserAction: User activity tracking
+  - DataChange: Data modification history
+  - ComplianceReport: Regulatory compliance tracking
+  
+  **Integration Requirements:**
+  - Depends on: User, Branch, Shipment
+  - Monitors: ALL other modules
+
+# TECHNICAL PREFERENCES (from Step 6)
+technical_preferences:
+  framework: "Laravel 8.12"
+  frontend: "Blade + jQuery"
+  database: "MariaDB with audit tables"
+  architecture: "Repository pattern"
+
+# CONTROLLER PATTERN (from breakdown)
+controller_pattern: "AuditAdminController"
+
+# DEVELOPMENT INFO (from breakdown)
+development_info:
+  priority: "HIGH - Phase 4"
+  development_estimate: "2-3 weeks"
+  dependencies: ["User", "Branch", "Shipment"]
+  affects: []
+  phase: "Compliance & Analytics Modules (Phase 4 - Supporting Operations)"
+
+# =================================================================
+# DETAILED CONTROLLER SPECIFICATIONS
+# =================================================================
+# Based on module breakdown, these controllers MUST be generated:
+
+controller_specifications:
+  AuditAdminController:
+    purpose: "Company admin audit management and configuration"
+    access_level: "Company Admin only"
+    methods_required:
+      - "index(): Audit dashboard and overview"
+      - "settings(): Configure audit settings"
+      - "updateSettings(): Update audit configuration"
+      - "modules(): Manage per-module audit settings"
+      - "users(): User audit activity overview"
+      - "branches(): Branch audit activity overview"
+      - "export(): Export audit data"
+      - "purge(): Purge old audit records"
+      - "alerts(): Manage audit alerts"
+      
+  AuditReportController:
+    purpose: "Generate compliance and audit reports"
+    access_level: "Company Admin and Branch Admin (filtered)"
+    methods_required:
+      - "dashboard(): Reporting dashboard"
+      - "generate(): Generate custom reports"
+      - "compliance(): Compliance-specific reports"
+      - "user(): User activity reports"
+      - "data(): Data change reports"
+      - "security(): Security audit reports"
+      - "schedule(): Schedule automated reports"
+      - "download(): Download generated reports"
+      
+  AuditLogController:
+    purpose: "View and search audit logs and history"
+    access_level: "Company Admin and Branch Admin (filtered)"
+    methods_required:
+      - "index(): List audit logs with filtering"
+      - "show(): View detailed audit log entry"
+      - "search(): Advanced search in audit logs"
+      - "filter(): Apply filters to audit logs"
+      - "timeline(): Timeline view of changes"
+      - "compare(): Compare data changes"
+      - "track(): Track specific record changes"
+
+# =================================================================
+# DETAILED MODEL SPECIFICATIONS
+# =================================================================
+# Based on module breakdown, these models MUST be generated:
+
+model_specifications:
+  AuditLog:
+    purpose: "Complete audit trail records for all system changes"
+    relationships:
+      - "belongsTo User (performed_by)"
+      - "belongsTo Branch"
+      - "morphTo auditable (polymorphic)"
+      
+  UserAction:
+    purpose: "User activity tracking across all modules"
+    relationships:
+      - "belongsTo User"
+      - "belongsTo Branch"
+      - "hasMany AuditLog"
+      
+  DataChange:
+    purpose: "Data modification history with before/after values"
+    relationships:
+      - "belongsTo AuditLog"
+      - "morphTo changeable (polymorphic)"
+      
+  ComplianceReport:
+    purpose: "Regulatory compliance tracking and reporting"
+    relationships:
+      - "belongsTo User (generated_by)"
+      - "belongsTo Branch (nullable for global reports)"
+
+# =================================================================
+# AUDIT TRACKING SPECIFICATIONS
+# =================================================================
+# Based on module breakdown, this system MUST be implemented:
+
+audit_tracking_system:
+  module_coverage:
+    description: "Complete change tracking for all modules"
+    tracked_modules:
+      - "User: User creation, modification, role changes"
+      - "Branch: Branch settings, markup changes"
+      - "Customer: Customer data changes, merge operations"
+      - "Shipment: Shipment creation, status changes, cancellations"
+      - "Shipper: API configuration changes, credential updates"
+      - "Product: Product changes, availability updates"
+    
+  tracked_operations:
+    description: "Operations that trigger audit logging"
+    operations:
+      - "CREATE: Record creation with full data"
+      - "UPDATE: Data changes with before/after values"
+      - "DELETE: Record deletion with original data"
+      - "LOGIN: User authentication events"
+      - "ACCESS: Resource access attempts"
+      - "EXPORT: Data export operations"
+      - "CONFIG: Configuration changes"
+    
+  data_retention:
+    description: "Audit data retention policies"
+    requirements:
+      - "Financial records: 7 years retention"
+      - "Shipment records: 3 years retention"
+      - "User activity: 1 year retention"
+      - "Security events: 2 years retention"
+      - "Configurable retention per data type"
+
+# =================================================================
+# COMPLIANCE REPORTING SPECIFICATIONS
+# =================================================================
+# Based on module breakdown, this system MUST be implemented:
+
+compliance_reporting_system:
+  regulatory_compliance:
+    description: "Compliance with shipping regulations"
+    reports:
+      - "Revenue and tax reporting"
+      - "Shipment volume reporting"
+      - "Cross-border shipment tracking"
+      - "Customer data handling compliance"
+    
+  security_compliance:
+    description: "Security and access control compliance"
+    reports:
+      - "User access patterns"
+      - "Privilege escalation tracking"
+      - "Failed access attempts"
+      - "Data export tracking"
+    
+  business_compliance:
+    description: "Internal business rule compliance"
+    reports:
+      - "Branch markup adherence"
+      - "Pricing rule compliance"
+      - "Service level agreement tracking"
+      - "Quality metrics reporting"
+    
+  automated_reporting:
+    description: "Scheduled compliance reports"
+    requirements:
+      - "Daily activity summaries"
+      - "Weekly compliance reports"
+      - "Monthly financial summaries"
+      - "Quarterly regulatory reports"
+
+# =================================================================
+# SECURITY AUDIT SPECIFICATIONS
+# =================================================================
+# Based on module breakdown, this system MUST be implemented:
+
+security_audit_system:
+  authentication_tracking:
+    description: "Track all authentication events"
+    events:
+      - "Successful logins with timestamps"
+      - "Failed login attempts with details"
+      - "Password changes and resets"
+      - "Account lockouts and unlocks"
+    
+  authorization_tracking:
+    description: "Track access control decisions"
+    events:
+      - "Permission grants and denials"
+      - "Role changes and assignments"
+      - "Privilege escalation attempts"
+      - "Cross-branch access attempts"
+    
+  data_access_tracking:
+    description: "Track sensitive data access"
+    events:
+      - "Customer data access"
+      - "Financial data access"
+      - "Configuration data access"
+      - "Export and download operations"
+    
+  alert_system:
+    description: "Real-time security alerts"
+    triggers:
+      - "Multiple failed login attempts"
+      - "Unusual access patterns"
+      - "Privilege escalation attempts"
+      - "Large data exports"
+
+# =================================================================
+# CRITICAL: AI INSTRUCTIONS FOR COMPLETE GENERATION
+# =================================================================
+# When AI processes this file, it MUST:
+# 1. Generate ALL 3 controllers with proper audit management
+# 2. Generate ALL 4 models with polymorphic relationships
+# 3. Implement comprehensive audit tracking across ALL modules
+# 4. Create compliance reporting system
+# 5. Implement security audit trails
+# 6. Add automated alert system
+# 7. Create data retention and purging capabilities
+# 8. Ensure integration with ALL other modules for tracking
+# ================================================================= 

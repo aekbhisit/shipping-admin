@@ -1,0 +1,623 @@
+# =================================================================
+# USER MODULE - DETAILED SPECIFICATION (MASTER FILE)
+# =================================================================
+# APPLICATION: SHIPCENTRAL SHIPPING MANAGEMENT
+# STAGE 5: DETAILED TECHNICAL SPECIFICATION
+# STATUS: READY FOR CODE GENERATION
+# =================================================================
+
+# This file serves as the MASTER FILE containing:
+# 1. ALL requirement-from-breakdown specifications
+# 2. USER ANSWER ADJUSTMENTS and preferences
+# 3. TECHNICAL IMPLEMENTATION DETAILS
+# 4. INTEGRATION SPECIFICATIONS
+
+# =================================================================
+# MODULE OVERVIEW
+# =================================================================
+module_info:
+  name: "User"
+  laravel_module_name: "User"
+  purpose: "Enhanced user management with 3-tier system and branch isolation for multi-branch shipping operations"
+  type: "EXTEND EXISTING"
+  complexity: "Medium-High"
+  estimated_development_time: "1-2 weeks"
+  
+application_context:
+  application_name: "ShipCentral"
+  business_domain: "Multi-branch shipping and logistics management"
+  module_role: "Foundation module handling 3-tier user system: Company Admin → Branch Admin → Branch Staff"
+  integration_with: ["Branch", "Customer", "Shipment", "Shipper", "Product", "Audit"]
+
+development_info:
+  priority: "CRITICAL - Phase 1"
+  dependencies: []
+  affects: ["ALL OTHER MODULES"]
+  phase: "Foundation Modules (Phase 1 - Essential Infrastructure)"
+
+# =================================================================
+# USER ANSWERS INTEGRATION
+# =================================================================
+# Based on user answers to 20 questions, these decisions have been made:
+
+user_preferences:
+  branch_assignment: "Company Admin: No branch assignment (access all branches)" # q1: answer "a"
+  branch_admin_scope: "Can only see/manage users in their assigned branch" # q2: answer "a"
+  deactivation_strategy: "Soft delete - mark as inactive but keep records" # q3: answer "a"
+  branch_transfer_policy: "Never - users are permanently assigned to branches" # q4: answer "a"
+  password_policy: "Standard Laravel validation (8+ characters)" # q5: answer "a"
+  
+  ui_preferences:
+    dashboard_redirection: "Role-appropriate landing pages for all user types" # q6: answer "d"
+    listing_interface: "DataTable with advanced filtering" # q7: answer "d"
+    branch_selection_ui: "Different UI based on user role creating" # q8: answer "d"
+    profile_editing: "Secure self-service model - users can edit basic info, password, but not branch/role" # q9: answer "d"
+    activity_display: "Show branch activity summary" # q10: answer "b"
+  
+  technical_preferences:
+    controller_structure: "All AdminController patterns with strict naming" # q11: answer "d"
+    repository_pattern: "Comprehensive with all business queries" # q12: answer "d"
+    middleware_implementation: "Combination of middleware and policies" # q13: answer "d"
+    database_indexing: "Basic indexes on branch_id and user_type" # q14: answer "a"
+    enhancement_approach: "Safe enhancement preserving existing functionality" # q15: answer "d"
+  
+  validation_preferences:
+    role_validation: "Database constraints only" # q16: answer "a"
+    branch_assignment_validation: "Simple foreign key constraints" # q17: answer "a"
+    permission_inheritance: "Flat permission model - explicit permissions only" # q18: answer "a"
+  
+  integration_preferences:
+    cross_module_auth: "Centralized LoginController for all modules" # q19: answer "a"
+    user_context_sharing: "Session-based context sharing" # q20: answer "a"
+
+# =================================================================
+# DATABASE SCHEMA (Enhanced from breakdown + user preferences)
+# =================================================================
+database_schema:
+  users: # ENHANCE EXISTING TABLE
+    purpose: "Enhanced user model with branch association and shipping roles"
+    enhancement_type: "ADD_FIELDS" # Don't recreate, enhance existing
+    new_fields:
+      branch_id: "bigint unsigned null, foreign key to branches.id, index" # Company Admin can be null
+      user_type: "enum('company_admin', 'branch_admin', 'branch_staff'), index"
+      shipping_permissions: "json null, shipping-specific permissions"
+      last_branch_activity: "timestamp null"
+      is_active: "boolean default true, index" # For soft delete
+      deactivated_at: "timestamp null"
+      deactivated_by: "bigint unsigned null, foreign key to users.id"
+    existing_fields_preserved: true
+    indexes:
+      - "branch_id" # Basic indexing per user preference
+      - "user_type"
+      - "is_active"
+      - "composite(branch_id, user_type, is_active)"
+    
+  roles: # ENHANCE EXISTING
+    purpose: "Enhanced roles with shipping-specific roles"
+    enhancement_type: "ADD_DATA" # Add new role records
+    new_roles:
+      - name: "company_admin", display_name: "Company Administrator"
+      - name: "branch_admin", display_name: "Branch Administrator"  
+      - name: "branch_staff", display_name: "Branch Staff"
+    
+  permissions: # ENHANCE EXISTING
+    purpose: "Enhanced permissions with module and branch awareness"
+    enhancement_type: "ADD_DATA" # Add new permission records
+    new_permissions:
+      # User Management
+      - name: "users.manage_all", display_name: "Manage All Users"
+      - name: "users.manage_branch", display_name: "Manage Branch Users"
+      # Branch Access
+      - name: "branches.access_all", display_name: "Access All Branches"
+      - name: "branches.access_own", display_name: "Access Own Branch"
+      # Module Permissions
+      - name: "shipments.create", display_name: "Create Shipments"
+      - name: "customers.manage", display_name: "Manage Customers"
+      - name: "reports.view", display_name: "View Reports"
+
+# =================================================================
+# CONTROLLER ARCHITECTURE (From breakdown + user preferences)
+# =================================================================
+controller_architecture:
+  UserAdminController:
+    purpose: "Company admin manages all users across all branches"
+    access_level: "Company Admin only"
+    route_prefix: "admin/users"
+    middleware: ["auth", "role:company_admin", "branch.access_all"]
+    methods:
+      index:
+        description: "List all users with DataTable and advanced filtering"
+        ui_implementation: "DataTable with branch filter, user type filter, status filter"
+        query_optimization: "Basic indexes on branch_id and user_type"
+        returns: "Paginated users with branch information"
+      create:
+        description: "Add new user with context-aware branch selection"
+        ui_implementation: "Different UI based on user role creating"
+        validation: "Database constraints only"
+        branch_assignment: "Company Admin: optional, others: required"
+      store:
+        description: "Save new user with proper role and branch validation"
+        validation_rules: "Standard Laravel validation, branch constraints"
+        business_logic: "Auto-assign permissions based on user type"
+      show:
+        description: "View user details with branch activity summary"
+        display_elements: "User info + branch activity summary"
+        activity_tracking: "Show branch activity summary"
+      edit:
+        description: "Edit user with context-aware branch selection"
+        ui_implementation: "Different UI based on user role creating"
+        constraints: "Cannot edit own role/branch"
+      update:
+        description: "Update user data with validation"
+        validation: "Database constraints only"
+        audit_trail: "Log changes for compliance"
+      destroy:
+        description: "Soft delete user (deactivate)"
+        implementation: "Mark as inactive, set deactivated_at, keep records"
+        audit_compliance: "Maintain full audit trail"
+      assignBranch:
+        description: "Assign user to specific branch"
+        constraints: "Never transfer - users permanently assigned"
+        validation: "Simple foreign key constraints"
+      changeRole:
+        description: "Change user role/permissions"
+        validation: "Database constraints only"
+        
+  BranchUserAdminController:
+    purpose: "Branch admin manages staff within their branch only"
+    access_level: "Branch Admin only"
+    route_prefix: "admin/branch-users"
+    middleware: ["auth", "role:branch_admin", "branch.isolation"]
+    branch_isolation: "Can only see/manage users in their assigned branch"
+    methods:
+      index:
+        description: "List users in current branch only with DataTable"
+        ui_implementation: "DataTable with advanced filtering (branch-scoped)"
+        query_scoping: "Automatic branch filtering via middleware"
+      create:
+        description: "Add new staff to current branch"
+        branch_assignment: "Auto-assign to admin's branch"
+        user_types_allowed: ["branch_staff"]
+      store:
+        description: "Save new branch staff"
+        validation: "Database constraints + branch scope validation"
+      show:
+        description: "View staff details (branch-scoped)"
+        access_control: "Only users in same branch"
+      edit:
+        description: "Edit staff information (branch-scoped)"
+        constraints: "Cannot change branch assignment"
+      update:
+        description: "Update staff data (branch-scoped)"
+        validation: "Database constraints only"
+      destroy:
+        description: "Deactivate staff (soft delete)"
+        implementation: "Soft delete with audit trail"
+        
+  LoginController:
+    purpose: "Centralized authentication for all user types with branch awareness"
+    access_level: "Public authentication"
+    route_prefix: "auth"
+    integration: "Centralized LoginController for all modules"
+    methods:
+      showLoginForm:
+        description: "Display login form"
+        ui_implementation: "Standard Laravel auth form"
+      login:
+        description: "Authenticate user with branch context"
+        context_sharing: "Session-based context sharing"
+        validation: "Standard Laravel validation (8+ characters)"
+      logout:
+        description: "Logout user and clear context"
+        session_management: "Clear user and branch context"
+      redirectPath:
+        description: "Redirect based on user role"
+        redirection_logic:
+          company_admin: "System dashboard with all branches"
+          branch_admin: "Branch management dashboard"
+          branch_staff: "Shipping operations dashboard"
+
+# =================================================================
+# REPOSITORY PATTERN (Comprehensive based on user preference)
+# =================================================================
+repository_architecture:
+  UserRepositoryInterface:
+    purpose: "Comprehensive repository interface with all business queries"
+    methods:
+      # Basic CRUD
+      - "findById(int $id): User"
+      - "create(array $data): User"
+      - "update(int $id, array $data): User"
+      - "delete(int $id): bool"
+      
+      # Branch-specific queries (user preference: comprehensive)
+      - "findByBranch(int $branchId): Collection"
+      - "findActiveByBranch(int $branchId): Collection"
+      - "findByUserType(string $userType): Collection"
+      - "findBranchAdmins(int $branchId): Collection"
+      - "findBranchStaff(int $branchId): Collection"
+      
+      # User type filtering methods
+      - "findCompanyAdmins(): Collection"
+      - "findAllBranchAdmins(): Collection"
+      - "findAllBranchStaff(): Collection"
+      
+      # Business queries for integration
+      - "getUsersWithPagination(array $filters): LengthAwarePaginator"
+      - "searchUsers(string $query, array $filters): Collection"
+      - "getUserActivitySummary(int $userId): array"
+      - "getBranchActivitySummary(int $branchId): array"
+      - "canUserAccessBranch(int $userId, int $branchId): bool"
+      - "softDeleteUser(int $userId, int $deletedBy): bool"
+      - "restoreUser(int $userId): bool"
+      
+  UserRepository:
+    purpose: "Eloquent implementation of comprehensive user repository"
+    optimization: "Basic indexes on branch_id and user_type"
+    caching: "No caching (keep simple per user preference)"
+
+# =================================================================
+# MODEL RELATIONSHIPS & BUSINESS LOGIC
+# =================================================================
+models_and_relationships:
+  User:
+    enhancements:
+      - "Add branch_id foreign key (nullable for company admin)"
+      - "Add user_type enum field"
+      - "Add shipping_permissions json field"
+      - "Add soft delete fields (is_active, deactivated_at, deactivated_by)"
+    relationships:
+      - "belongsTo(Branch::class, 'branch_id')" # Nullable for company admin
+      - "hasMany activities through various modules"
+      - "belongsTo(User::class, 'deactivated_by')" # Self-reference
+    scopes:
+      - "scopeActive()" # is_active = true
+      - "scopeByBranch(int $branchId)"
+      - "scopeByUserType(string $userType)"
+      - "scopeCompanyAdmins()" # user_type = company_admin
+      - "scopeBranchAdmins()" # user_type = branch_admin
+      - "scopeBranchStaff()" # user_type = branch_staff
+    business_methods:
+      - "canAccessBranch(int $branchId): bool"
+      - "hasPermission(string $permission): bool"
+      - "isCompanyAdmin(): bool"
+      - "isBranchAdmin(): bool"
+      - "isBranchStaff(): bool"
+      - "getBranchActivitySummary(): array"
+      
+  Role:
+    enhancements:
+      - "Add shipping-specific roles data"
+      - "Add branch-aware permission checking"
+    
+  Permission:
+    enhancements:
+      - "Add module-specific permissions"
+      - "Add branch-aware permissions"
+
+# =================================================================
+# MIDDLEWARE & SECURITY (Layered approach per user preference)
+# =================================================================
+middleware_architecture:
+  BranchIsolationMiddleware:
+    purpose: "Enforce branch isolation for branch-scoped users"
+    implementation: "Combination of middleware and policies"
+    logic:
+      - "Check user type and branch assignment"
+      - "Apply automatic query scoping for branch admin/staff"
+      - "Allow company admin full access"
+    application: ["BranchUserAdminController"]
+    
+  BranchAccessMiddleware:
+    purpose: "Verify branch access permissions"
+    implementation: "Session-based context sharing"
+    logic:
+      - "Verify user can access requested branch"
+      - "Set branch context in session"
+      - "Log branch access for audit"
+    
+  policies:
+    UserPolicy:
+      purpose: "Define user access policies"
+      methods:
+        - "viewAny(): Company Admin or Branch Admin for own branch"
+        - "view(): Same branch or Company Admin"
+        - "create(): Company Admin or Branch Admin"
+        - "update(): Company Admin or Branch Admin (same branch)"
+        - "delete(): Company Admin only"
+
+# =================================================================
+# VIEW STRUCTURE & UI IMPLEMENTATION
+# =================================================================
+view_structure:
+  admin_layout:
+    base_template: "layouts.admin"
+    navigation: "Role-based menu system"
+    dashboard_redirection: "Role-appropriate landing pages"
+    
+  user_management:
+    index:
+      template: "user.admin.index"
+      ui_implementation: "DataTable with advanced filtering"
+      filters: ["branch", "user_type", "status"]
+      features: ["search", "sort", "paginate", "export"]
+      
+    create:
+      template: "user.admin.create"
+      ui_implementation: "Different UI based on user role creating"
+      components:
+        - "User information form"
+        - "Branch selection (context-aware)"
+        - "Role assignment"
+        - "Permission selection"
+        
+    edit:
+      template: "user.admin.edit"
+      ui_implementation: "Context-aware branch selection"
+      constraints: "Cannot edit own role/branch"
+      
+    show:
+      template: "user.admin.show"
+      display_elements:
+        - "User details"
+        - "Branch information"  
+        - "Branch activity summary"
+        - "Permission list"
+        - "Activity log"
+        
+  branch_user_management:
+    index:
+      template: "user.branch.index"
+      ui_implementation: "DataTable with branch-scoped filtering"
+      scope: "Current branch users only"
+      
+    create:
+      template: "user.branch.create"
+      constraints: "Auto-assign to current branch"
+      user_types: ["branch_staff"]
+      
+  authentication:
+    login:
+      template: "auth.login"
+      implementation: "Standard Laravel auth form"
+      validation: "Standard Laravel validation (8+ characters)"
+      
+    dashboard_redirect:
+      logic: "Role-based redirection after login"
+      targets:
+        company_admin: "/admin/dashboard"
+        branch_admin: "/admin/branch/dashboard"
+        branch_staff: "/staff/dashboard"
+
+# =================================================================
+# ROUTING STRUCTURE
+# =================================================================
+routing_structure:
+  admin_routes: # routes/admin.php
+    prefix: "admin"
+    middleware: ["auth", "role:company_admin"]
+    routes:
+      - "Route::resource('users', 'UserAdminController')"
+      - "Route::post('users/{id}/assign-branch', 'UserAdminController@assignBranch')"
+      - "Route::post('users/{id}/change-role', 'UserAdminController@changeRole')"
+      
+  branch_admin_routes: # routes/branch.php  
+    prefix: "admin/branch"
+    middleware: ["auth", "role:branch_admin", "branch.isolation"]
+    routes:
+      - "Route::resource('users', 'BranchUserAdminController')"
+      
+  auth_routes: # routes/web.php
+    routes:
+      - "Route::get('login', 'LoginController@showLoginForm')"
+      - "Route::post('login', 'LoginController@login')"
+      - "Route::post('logout', 'LoginController@logout')"
+
+# =================================================================
+# BUSINESS LOGIC & SERVICES
+# =================================================================
+service_architecture:
+  UserService:
+    purpose: "Handle complex user business logic"
+    methods:
+      - "createUserWithBranch(array $userData): User"
+      - "assignUserToBranch(int $userId, int $branchId): bool"
+      - "deactivateUser(int $userId, int $deactivatedBy): bool"
+      - "getUserActivitySummary(int $userId): array"
+      - "validateBranchAssignment(User $user, int $branchId): bool"
+      - "syncUserPermissions(User $user): void"
+      
+  BranchAccessService:
+    purpose: "Handle branch access and isolation logic"
+    methods:
+      - "canUserAccessBranch(User $user, int $branchId): bool"
+      - "getUserAccessibleBranches(User $user): Collection"
+      - "setBranchContext(User $user, int $branchId): void"
+      - "getCurrentBranchContext(): ?int"
+
+# =================================================================
+# INTEGRATION FEATURES
+# =================================================================
+integration_specifications:
+  foundation_for_modules:
+    purpose: "User module serves as foundation for ALL other modules"
+    context_sharing: "Session-based context sharing"
+    authentication: "Centralized LoginController for all modules"
+    
+  branch_module_integration:
+    relationship: "Users belong to branches"
+    access_control: "Branch-aware user management"
+    
+  audit_integration:
+    user_activity_logging: "Log all user management actions"
+    compliance_tracking: "Soft delete with audit trail"
+    
+  cross_module_context:
+    user_context_injection: "User context available to all modules"
+    branch_context_injection: "Branch context available to all modules"
+    permission_checking: "Centralized permission checking service"
+
+# =================================================================
+# SECURITY & VALIDATION
+# =================================================================
+security_specifications:
+  authentication:
+    password_policy: "Standard Laravel validation (8+ characters)"
+    session_management: "Session-based context sharing"
+    
+  authorization:
+    role_based_access: "Company Admin, Branch Admin, Branch Staff"
+    permission_model: "Flat permission model - explicit permissions only"
+    branch_isolation: "Automatic branch filtering for non-company admins"
+    
+  data_validation:
+    user_creation: "Database constraints only"
+    branch_assignment: "Simple foreign key constraints"
+    role_validation: "Database constraints only"
+    
+  audit_compliance:
+    user_deactivation: "Soft delete - mark as inactive but keep records"
+    activity_logging: "Log all user management actions"
+    data_retention: "Permanent retention for audit compliance"
+
+# =================================================================
+# PERFORMANCE OPTIMIZATIONS
+# =================================================================
+performance_specifications:
+  database_optimization:
+    indexing_strategy: "Basic indexes on branch_id and user_type"
+    query_optimization: "Repository pattern with optimized queries"
+    
+  caching_strategy:
+    approach: "No caching (keep simple per user preference)"
+    session_caching: "User and branch context in session"
+    
+  ui_optimization:
+    datatables: "Server-side processing for large user lists"
+    ajax_loading: "AJAX for branch-aware form components"
+
+# =================================================================
+# FILE STRUCTURE
+# =================================================================
+file_structure:
+  controllers:
+    - "Http/Controllers/UserAdminController.php"
+    - "Http/Controllers/BranchUserAdminController.php"
+    - "Http/Controllers/LoginController.php"
+    
+  repositories:
+    - "Repositories/Contracts/UserRepositoryInterface.php"
+    - "Repositories/Eloquent/UserRepository.php"
+    
+  models:
+    - "Entities/User.php" # Enhanced existing model
+    
+  middleware:
+    - "Http/Middleware/BranchIsolationMiddleware.php"
+    - "Http/Middleware/BranchAccessMiddleware.php"
+    
+  policies:
+    - "Policies/UserPolicy.php"
+    
+  services:
+    - "Services/UserService.php"
+    - "Services/BranchAccessService.php"
+    
+  views:
+    admin:
+      - "Resources/views/admin/users/index.blade.php"
+      - "Resources/views/admin/users/create.blade.php"
+      - "Resources/views/admin/users/edit.blade.php"
+      - "Resources/views/admin/users/show.blade.php"
+    branch:
+      - "Resources/views/branch/users/index.blade.php"
+      - "Resources/views/branch/users/create.blade.php"
+      - "Resources/views/branch/users/edit.blade.php"
+    auth:
+      - "Resources/views/auth/login.blade.php"
+      
+  routes:
+    - "Routes/admin.php"
+    - "Routes/branch.php"
+    - "Routes/web.php"
+    
+  migrations:
+    - "Database/Migrations/xxxx_enhance_users_table_for_shipping.php"
+    - "Database/Migrations/xxxx_add_shipping_roles_and_permissions.php"
+    
+  assets:
+    - "Resources/assets/js/user-management.js"
+    - "Resources/assets/sass/user-admin.scss"
+
+# =================================================================
+# TESTING STRATEGY
+# =================================================================
+testing_specifications:
+  unit_tests:
+    - "UserService business logic"
+    - "BranchAccessService branch isolation"
+    - "Repository pattern methods"
+    - "User model relationships and scopes"
+    
+  feature_tests:
+    - "User creation workflow"
+    - "Branch assignment and isolation"
+    - "Role-based access control"
+    - "Authentication and redirection"
+    - "Soft delete functionality"
+    
+  integration_tests:
+    - "Cross-module authentication"
+    - "Branch context sharing"
+    - "Permission inheritance"
+
+# =================================================================
+# DEPLOYMENT CONSIDERATIONS
+# =================================================================
+deployment_specifications:
+  enhancement_strategy: "Safe enhancement preserving existing functionality"
+  data_migration: "Preserve existing user data during upgrade"
+  rollback_plan: "Database migration rollback capability"
+  
+  migration_steps:
+    1: "Add new fields to users table"
+    2: "Add shipping-specific roles and permissions"
+    3: "Update existing users with default values"
+    4: "Deploy new controllers and views"
+    5: "Test branch isolation functionality"
+
+# =================================================================
+# FINAL SPECIFICATION SUMMARY
+# =================================================================
+specification_summary:
+  total_controllers: 3
+  total_models: 1 (enhanced)
+  total_repositories: 1
+  total_middleware: 2
+  total_services: 2
+  total_views: 8
+  total_routes: 3 files
+  
+  key_features:
+    - "3-tier user system with branch isolation"
+    - "Enhanced existing User module (not recreated)"
+    - "AdminController naming pattern consistency"
+    - "Comprehensive repository pattern"
+    - "Session-based context sharing"
+    - "Soft delete with audit compliance"
+    - "DataTable with advanced filtering"
+    - "Role-based dashboard redirection"
+
+# =================================================================
+# STATUS: READY FOR CODE GENERATION
+# =================================================================
+generation_readiness:
+  requirements_complete: true
+  user_answers_integrated: true
+  technical_details_specified: true
+  architecture_defined: true
+  ready_for_stage_6: true
+
+# This MASTER FILE contains all information needed for Stage 6: Code Generation
+# All controllers, models, views, routes, and business logic are fully specified
+# User preferences and breakdown requirements are completely merged 

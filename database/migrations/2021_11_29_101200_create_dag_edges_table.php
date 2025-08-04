@@ -1,0 +1,35 @@
+<?php
+
+declare(strict_types=1);
+
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Database\Migrations\Migration;
+
+class CreateDagEdgesTable extends Migration
+{
+    public function up(): void
+    {
+        Schema::create(self::getTableName(), function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('entry_edge_id')->nullable()->comment('The ID of the incoming edge to the start vertex that is the creation reason for this implied edge; direct edges contain the same value as the Id column');
+            $table->unsignedBigInteger('direct_edge_id')->nullable()->comment('The ID of the direct edge that caused the creation of this implied edge; direct edges contain the same value as the Id column');
+            $table->unsignedBigInteger('exit_edge_id')->nullable()->comment('The ID of the outgoing edge from the end vertex that is the creation reason for this implied edge; direct edges contain the same value as the Id column');
+            $table->unsignedBigInteger('start_vertex')->comment('The ID of the start vertex');
+            $table->unsignedBigInteger('end_vertex')->comment('The ID of the end vertex');
+            $table->integer('hops')->comment('Indicates how many vertex hops are necessary for the path; it is zero for direct edges');
+            $table->string('source', 50)->index()->comment('A column to indicate the context in which the graph is created; useful if we have more than one DAG to be represented within the same application  CAUTION: you need to make sure that the IDs of vertices from different sources never clash; the best is probably use of UUIDs');
+            $table->timestamps();
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists(self::getTableName());
+    }
+
+    private static function getTableName(): string
+    {
+        return config('laravel-dag-manager.table_name');
+    }
+}

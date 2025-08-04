@@ -1,0 +1,13 @@
+{
+    "name": "Branch",
+    "alias": "branch",
+    "description": "Branch management module for ShipCentral - Multi-branch shipping operations",
+    "keywords": ["branch", "shipping", "logistics", "multi-branch"],
+    "priority": 1,
+    "providers": [
+        "Modules\\Branch\\Providers\\BranchServiceProvider"
+    ],
+    "aliases": {},
+    "files": [],
+    "requires": ["User"]
+} 

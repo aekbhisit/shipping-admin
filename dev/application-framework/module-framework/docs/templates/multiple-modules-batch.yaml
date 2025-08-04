@@ -1,0 +1,114 @@
+# =================================================================
+# MULTIPLE MODULES BATCH PROCESSING
+# =================================================================
+# Use this template to organize multiple module requirements
+# for sequential processing by AI
+# =================================================================
+
+# APPLICATION INFO
+application_name: "[ApplicationName]"     # e.g. "ShipCentral", "EcommStore"
+technology_stack:
+  framework: "[Laravel version]"          # e.g. "Laravel 8.12"
+  frontend: "[Frontend approach]"         # e.g. "Blade + jQuery"
+  database: "[Database]"                  # e.g. "MySQL"
+  architecture: "Repository pattern"
+
+# PROCESSING ORDER - IMPORTANT!
+# Specify the order AI should process your modules
+processing_order:
+  - module_name: "[FirstModule]"          # e.g. "User"
+    priority: "foundation"                # Foundation modules first
+    description: "[Brief description]"    # e.g. "User management and authentication"
+  
+  - module_name: "[SecondModule]"         # e.g. "Product"
+    priority: "core"                      # Core business modules
+    description: "[Brief description]"    # e.g. "Product catalog management"
+  
+  - module_name: "[ThirdModule]"          # e.g. "Customer"
+    priority: "core"                      # Core business modules
+    description: "[Brief description]"    # e.g. "Customer relationship management"
+  
+  # Add more modules as needed...
+
+# MODULE REQUIREMENTS LOCATION
+# Where your individual module-requirements-basic.yaml files are located
+requirements_location: "dev/module-framework/modules/[app-name]/"
+modules_prepared:
+  - "[FirstModule]/module-requirements-basic.yaml"
+  - "[SecondModule]/module-requirements-basic.yaml"  
+  - "[ThirdModule]/module-requirements-basic.yaml"
+  # List all your prepared module requirement files
+
+# BATCH PROCESSING PREFERENCES
+batch_preferences:
+  sequential_processing: true             # Process one at a time (recommended)
+  wait_for_approval: true                # Wait for user approval after each module
+  consistent_patterns: true              # Use same patterns across all modules
+  reference_completed: true              # Later modules can reference earlier ones
+
+# EXAMPLE FILLED OUT:
+# =================================================================
+# application_name: "ShipCentral"
+# technology_stack:
+#   framework: "Laravel 8.12"
+#   frontend: "Blade + jQuery" 
+#   database: "MySQL"
+#   architecture: "Repository pattern"
+#
+# processing_order:
+#   - module_name: "User"
+#     priority: "foundation"
+#     description: "User management and authentication system"
+#   
+#   - module_name: "Product"
+#     priority: "core"
+#     description: "Add-on services and supplies management"
+#   
+#   - module_name: "Customer"
+#     priority: "core"
+#     description: "Customer relationship management"
+#     
+#   - module_name: "Branch"
+#     priority: "core"
+#     description: "Branch operations and settings"
+#     
+#   - module_name: "Shipper"
+#     priority: "core"
+#     description: "Shipper partner management"
+#     
+#   - module_name: "Shipment"
+#     priority: "operations"
+#     description: "Shipment processing and tracking"
+#     
+#   - module_name: "Audit"
+#     priority: "utility"
+#     description: "Activity logging and auditing"
+#
+# requirements_location: "dev/module-framework/modules/shipcentral/"
+# modules_prepared:
+#   - "user/module-requirements-basic.yaml"
+#   - "product/module-requirements-basic.yaml"
+#   - "customer/module-requirements-basic.yaml"
+#   - "branch/module-requirements-basic.yaml"
+#   - "shipper/module-requirements-basic.yaml"
+#   - "shipment/module-requirements-basic.yaml"
+#   - "audit/module-requirements-basic.yaml"
+# =================================================================
+
+# =================================================================
+# INSTRUCTIONS FOR USE:
+# 1. Fill out this template with your application details
+# 2. Prepare all individual module-requirements-basic.yaml files
+# 3. Use docs/prompts/multiple-modules.md prompt
+# 4. Send this file + all individual requirement files + instruction files
+# 5. AI will process modules sequentially in specified order
+# =================================================================
+
+# =================================================================
+# BENEFITS OF BATCH PROCESSING:
+# - Consistent technology stack across all modules
+# - Same architecture patterns used throughout
+# - Later modules can reference earlier completed modules
+# - Efficient workflow without context switching
+# - Quality control with approval after each module
+# ================================================================= 

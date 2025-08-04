@@ -1,0 +1,296 @@
+# =================================================================
+# PRODUCT MODULE REQUIREMENTS - FROM MODULE BREAKDOWN
+# =================================================================
+# Generated from 07-module-breakdown-planning.yaml using improved template
+# STATUS: COMPLETE DATA TRANSFER FROM BREAKDOWN
+# =================================================================
+
+# BASIC MODULE INFO (from module breakdown)
+module_folder: "Product"
+output_organization: true
+application_name: "ShipCentral"
+module_type: "CREATE NEW"
+
+# APPLICATION CONTEXT (transfer from breakdown)
+application_context:
+  application_name: "ShipCentral"
+  business_domain: "Multi-branch shipping and logistics management"
+  module_role: "Manage product categories for shipments and additional services/add-ons"
+  integration_with: ["User", "Branch", "Shipment"]
+  technology_stack:
+    framework: "Laravel 8.12"
+    frontend: "Blade + jQuery"
+    database: "MariaDB"
+    ui: "Bootstrap 5 + DataTables"
+    architecture: "Modular (nwidart/laravel-modules)"
+
+# TRANSFER COMPLETE MODULE BREAKDOWN DATA
+module_breakdown_transfer:
+  # COPIED EXACTLY from 07-module-breakdown-planning.yaml
+  core_features: |
+    - Product category management
+    - Add-on services (insurance, special handling)
+    - Product-based shipping rules
+    - Branch-specific product availability
+  
+  controllers_needed: |
+    - ProductAdminController: Manage products and categories
+    - ProductController: Product selection for shipments
+    - AddOnController: Additional service management
+    
+  models_needed: |
+    - Product: Product information and categories
+    - ProductCategory: Product categorization
+    - AddOnService: Additional services and pricing
+    - BranchProduct: Branch-specific product availability
+    
+  business_purpose: |
+    Manage product categories for shipments and additional services/add-ons
+    
+# USER REQUIREMENT (enhanced with breakdown data)
+user_requirement: |
+  Create comprehensive Product module for ShipCentral's product and add-on service management based on module breakdown specifications.
+  
+  **Business Context:** 
+  Manage product categories for shipments and additional services/add-ons for multi-branch shipping operations.
+  
+  **Core Features:**
+  - Product category management
+  - Add-on services (insurance, special handling)
+  - Product-based shipping rules
+  - Branch-specific product availability
+  
+  **Controllers Required:**
+  - ProductAdminController: Manage products and categories
+  - ProductController: Product selection for shipments
+  - AddOnController: Additional service management
+  
+  **Models Required:**
+  - Product: Product information and categories
+  - ProductCategory: Product categorization
+  - AddOnService: Additional services and pricing
+  - BranchProduct: Branch-specific product availability
+  
+  **Integration Requirements:**
+  - Depends on: User, Branch
+  - Affects: Shipment
+
+# TECHNICAL PREFERENCES (from Step 6)
+technical_preferences:
+  framework: "Laravel 8.12"
+  frontend: "Blade + jQuery"
+  database: "MariaDB"
+  architecture: "Repository pattern"
+
+# CONTROLLER PATTERN (from breakdown)
+controller_pattern: "ProductAdminController"
+
+# DEVELOPMENT INFO (from breakdown)
+development_info:
+  priority: "MEDIUM - Phase 3"
+  development_estimate: "2-3 weeks"
+  dependencies: ["User", "Branch"]
+  affects: ["Shipment"]
+  phase: "Integration Modules (Phase 3 - External Services)"
+
+# =================================================================
+# DETAILED CONTROLLER SPECIFICATIONS
+# =================================================================
+# Based on module breakdown, these controllers MUST be generated:
+
+controller_specifications:
+  ProductAdminController:
+    purpose: "Company and branch admin manage products and categories"
+    access_level: "Company Admin and Branch Admin"
+    methods_required:
+      - "index(): List products with categories"
+      - "create(): Add new product"
+      - "store(): Save new product"
+      - "show(): View product details"
+      - "edit(): Edit product information"
+      - "update(): Update product data"
+      - "destroy(): Deactivate product"
+      - "categories(): Manage product categories"
+      - "branchProducts(): Manage branch-specific availability"
+      
+  ProductController:
+    purpose: "Staff product selection during shipment creation"
+    access_level: "Branch Staff"
+    methods_required:
+      - "search(): Search available products"
+      - "byCategory(): List products by category"
+      - "available(): Get branch-available products"
+      - "select(): Select product for shipment"
+      - "rules(): Get product shipping rules"
+      
+  AddOnController:
+    purpose: "Additional service management and selection"
+    access_level: "Branch Staff and Admin"
+    methods_required:
+      - "index(): List available add-on services"
+      - "create(): Add new add-on service"
+      - "store(): Save add-on service"
+      - "show(): View add-on details"
+      - "edit(): Edit add-on service"
+      - "update(): Update add-on data"
+      - "calculate(): Calculate add-on pricing"
+      - "apply(): Apply add-on to shipment"
+
+# =================================================================
+# DETAILED MODEL SPECIFICATIONS
+# =================================================================
+# Based on module breakdown, these models MUST be generated:
+
+model_specifications:
+  Product:
+    purpose: "Product information and categories"
+    relationships:
+      - "belongsTo ProductCategory"
+      - "hasMany BranchProduct"
+      - "hasMany ShipmentProduct (through shipments)"
+      
+  ProductCategory:
+    purpose: "Product categorization system"
+    relationships:
+      - "hasMany Product"
+      - "belongsTo ProductCategory (parent_id)"
+      - "hasMany ProductCategory (children)"
+      
+  AddOnService:
+    purpose: "Additional services and pricing"
+    relationships:
+      - "hasMany ShipmentAddOn (through shipments)"
+      - "hasMany BranchAddOn (branch-specific pricing)"
+      
+  BranchProduct:
+    purpose: "Branch-specific product availability and pricing"
+    relationships:
+      - "belongsTo Branch"
+      - "belongsTo Product"
+
+# =================================================================
+# PRODUCT CATEGORY SPECIFICATIONS
+# =================================================================
+# Based on module breakdown, this system MUST be implemented:
+
+product_category_system:
+  shipping_supplies:
+    description: "Physical shipping supplies"
+    examples:
+      - "Boxes (various sizes)"
+      - "Envelopes and padded mailers"
+      - "Bubble wrap and packing materials"
+      - "Labels and tape"
+    rules:
+      - "Physical inventory tracking"
+      - "Cost calculation per unit"
+      - "Stock alerts and reordering"
+    
+  packaging_services:
+    description: "Professional packaging services"
+    examples:
+      - "Custom packaging"
+      - "Fragile item packaging"
+      - "Gift wrapping"
+      - "Document preparation"
+    rules:
+      - "Labor cost calculation"
+      - "Time-based pricing"
+      - "Special handling requirements"
+    
+  shipping_categories:
+    description: "Package content categories"
+    examples:
+      - "Documents"
+      - "Electronics"
+      - "Fragile items"
+      - "Hazardous materials"
+    rules:
+      - "Carrier restrictions"
+      - "Special handling requirements"
+      - "Insurance requirements"
+
+# =================================================================
+# ADD-ON SERVICE SPECIFICATIONS
+# =================================================================
+# Based on module breakdown, this system MUST be implemented:
+
+addon_service_system:
+  insurance_services:
+    description: "Package insurance and protection"
+    types:
+      - "Basic coverage (up to 1000 THB)"
+      - "Standard coverage (up to 10000 THB)"
+      - "Premium coverage (up to 100000 THB)"
+      - "Full value insurance"
+    pricing: "Percentage of declared value"
+    
+  special_handling:
+    description: "Special handling requirements"
+    types:
+      - "Fragile handling"
+      - "Temperature controlled"
+      - "Signature required"
+      - "Photo confirmation"
+    pricing: "Fixed fee per service"
+    
+  delivery_options:
+    description: "Enhanced delivery services"
+    types:
+      - "Same day delivery"
+      - "Weekend delivery"
+      - "Evening delivery"
+      - "Specific time slot"
+    pricing: "Variable by location and time"
+    
+  cod_services:
+    description: "Cash on delivery services"
+    types:
+      - "Standard COD"
+      - "COD with card payment"
+      - "COD with bank transfer"
+    pricing: "Percentage of COD amount"
+
+# =================================================================
+# BRANCH-SPECIFIC AVAILABILITY SPECIFICATIONS
+# =================================================================
+# Based on module breakdown, this system MUST be implemented:
+
+branch_availability_system:
+  product_availability:
+    description: "Branch-specific product availability"
+    requirements:
+      - "Each branch can enable/disable products"
+      - "Branch-specific pricing overrides"
+      - "Inventory tracking per branch"
+      - "Default availability settings"
+    
+  add_on_availability:
+    description: "Branch-specific add-on service availability"
+    requirements:
+      - "Each branch can offer different add-ons"
+      - "Branch-specific add-on pricing"
+      - "Service capability matching"
+      - "Regional service restrictions"
+    
+  pricing_rules:
+    description: "Branch-specific pricing and rules"
+    requirements:
+      - "Base price + branch markup"
+      - "Volume discounts per branch"
+      - "Promotional pricing"
+      - "Rule inheritance from parent"
+
+# =================================================================
+# CRITICAL: AI INSTRUCTIONS FOR COMPLETE GENERATION
+# =================================================================
+# When AI processes this file, it MUST:
+# 1. Generate ALL 3 controllers with proper access levels
+# 2. Generate ALL 4 models with category relationships
+# 3. Implement hierarchical product categories
+# 4. Create comprehensive add-on service system
+# 5. Implement branch-specific availability
+# 6. Add pricing calculation logic
+# 7. Ensure integration with Shipment module
+# 8. Create inventory tracking capabilities
+# ================================================================= 

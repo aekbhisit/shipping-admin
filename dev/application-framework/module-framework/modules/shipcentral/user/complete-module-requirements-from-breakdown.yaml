@@ -1,0 +1,198 @@
+# =================================================================
+# USER MODULE REQUIREMENTS - FROM MODULE BREAKDOWN
+# =================================================================
+# Generated from 07-module-breakdown-planning.yaml using improved template
+# STATUS: COMPLETE DATA TRANSFER FROM BREAKDOWN
+# =================================================================
+
+# BASIC MODULE INFO (from module breakdown)
+module_folder: "User"
+output_organization: true
+application_name: "ShipCentral"
+module_type: "EXTEND EXISTING"
+
+# APPLICATION CONTEXT (transfer from breakdown)
+application_context:
+  application_name: "ShipCentral"
+  business_domain: "Multi-branch shipping and logistics management"
+  module_role: "Handle 3-tier user system: Company Admin → Branch Admin → Branch Staff"
+  integration_with: ["Branch", "Customer", "Shipment", "Shipper", "Product", "Audit"]
+  technology_stack:
+    framework: "Laravel 8.12"
+    frontend: "Blade + jQuery"
+    database: "MariaDB"
+    ui: "Bootstrap 5 + DataTables"
+    architecture: "Modular (nwidart/laravel-modules)"
+
+# TRANSFER COMPLETE MODULE BREAKDOWN DATA
+module_breakdown_transfer:
+  # COPIED EXACTLY from 07-module-breakdown-planning.yaml
+  key_enhancements: |
+    - Add branch association to users
+    - Implement AdminController naming pattern
+    - Add shipping-specific roles and permissions
+    - Multi-branch access control
+  
+  controllers_needed: |
+    - UserAdminController: Company admin manages all users
+    - BranchUserAdminController: Branch admin manages branch staff
+    - LoginController: Authentication for all user types
+    
+  business_purpose: |
+    Handle 3-tier user system: Company Admin → Branch Admin → Branch Staff
+    
+# USER REQUIREMENT (enhanced with breakdown data)
+user_requirement: |
+  Enhance existing User module for ShipCentral's multi-branch shipping business based on module breakdown specifications.
+  
+  **Business Context:** 
+  Handle 3-tier user system: Company Admin → Branch Admin → Branch Staff for multi-branch shipping operations.
+  
+  **Key Enhancements:**
+  - Add branch association to users
+  - Implement AdminController naming pattern
+  - Add shipping-specific roles and permissions
+  - Multi-branch access control
+  
+  **Controllers Required:**
+  - UserAdminController: Company admin manages all users
+  - BranchUserAdminController: Branch admin manages branch staff
+  - LoginController: Authentication for all user types
+  
+  **Integration Requirements:**
+  - Foundation for all other modules
+  - Affects: ALL OTHER MODULES
+
+# TECHNICAL PREFERENCES (from Step 6)
+technical_preferences:
+  framework: "Laravel 8.12"
+  frontend: "Blade + jQuery"
+  database: "MariaDB"
+  architecture: "Repository pattern"
+
+# CONTROLLER PATTERN (from breakdown)
+controller_pattern: "UserAdminController"
+
+# DEVELOPMENT INFO (from breakdown)
+development_info:
+  priority: "CRITICAL - Phase 1"
+  development_estimate: "1-2 weeks"
+  dependencies: []
+  affects: ["ALL OTHER MODULES"]
+  phase: "Foundation Modules (Phase 1 - Essential Infrastructure)"
+
+# =================================================================
+# DETAILED CONTROLLER SPECIFICATIONS
+# =================================================================
+# Based on module breakdown, these controllers MUST be generated:
+
+controller_specifications:
+  UserAdminController:
+    purpose: "Company admin manages all users across all branches"
+    access_level: "Company Admin only"
+    methods_required:
+      - "index(): List all users with branch association"
+      - "create(): Add new user with branch assignment"
+      - "store(): Save new user with proper role"
+      - "show(): View user details and activity"
+      - "edit(): Edit user information and branch"
+      - "update(): Update user data"
+      - "destroy(): Deactivate user"
+      - "assignBranch(): Assign user to specific branch"
+      - "changeRole(): Change user role/permissions"
+      
+  BranchUserAdminController:
+    purpose: "Branch admin manages staff within their branch only"
+    access_level: "Branch Admin only"
+    methods_required:
+      - "index(): List users in current branch only"
+      - "create(): Add new staff to current branch"
+      - "store(): Save new branch staff"
+      - "show(): View staff details"
+      - "edit(): Edit staff information"
+      - "update(): Update staff data"
+      - "destroy(): Deactivate staff"
+      
+  LoginController:
+    purpose: "Authentication for all user types with branch awareness"
+    access_level: "Public authentication"
+    methods_required:
+      - "showLoginForm(): Display login form"
+      - "login(): Authenticate user with branch context"
+      - "logout(): Logout user"
+      - "redirectPath(): Redirect based on user role"
+
+# =================================================================
+# DETAILED MODEL SPECIFICATIONS
+# =================================================================
+# Based on module breakdown, these enhancements MUST be implemented:
+
+model_specifications:
+  User:
+    purpose: "Enhanced user model with branch association and shipping roles"
+    enhancements:
+      - "Add branch_id foreign key"
+      - "Add shipping-specific roles"
+      - "Add multi-branch access control"
+    relationships:
+      - "belongsTo Branch"
+      - "hasMany activities through modules"
+      
+  Role:
+    purpose: "Shipping-specific roles and permissions"
+    enhancements:
+      - "Add Company Admin role"
+      - "Add Branch Admin role"
+      - "Add Branch Staff role"
+    
+  Permission:
+    purpose: "Multi-branch permission system"
+    enhancements:
+      - "Branch-aware permissions"
+      - "Module-specific permissions"
+
+# =================================================================
+# USER TIER SYSTEM SPECIFICATIONS
+# =================================================================
+# Based on module breakdown, this system MUST be implemented:
+
+user_tier_system:
+  company_admin:
+    description: "Full system access across all branches"
+    permissions:
+      - "Manage all users"
+      - "Manage all branches"
+      - "Access all modules"
+      - "System configuration"
+    branch_access: "All branches"
+    
+  branch_admin:
+    description: "Branch management and staff oversight"
+    permissions:
+      - "Manage branch staff only"
+      - "Branch configuration"
+      - "Branch operations"
+      - "Branch reporting"
+    branch_access: "Assigned branch only"
+    
+  branch_staff:
+    description: "Daily operations within branch"
+    permissions:
+      - "Create shipments"
+      - "Manage customers"
+      - "Print labels"
+      - "Basic reporting"
+    branch_access: "Assigned branch only"
+
+# =================================================================
+# CRITICAL: AI INSTRUCTIONS FOR COMPLETE ENHANCEMENT
+# =================================================================
+# When AI processes this file, it MUST:
+# 1. Enhance existing User module (don't recreate from scratch)
+# 2. Add ALL 3 controllers with proper naming
+# 3. Implement 3-tier user system
+# 4. Add branch association to users
+# 5. Implement AdminController naming pattern
+# 6. Add shipping-specific roles and permissions
+# 7. Implement multi-branch access control
+# ================================================================= 

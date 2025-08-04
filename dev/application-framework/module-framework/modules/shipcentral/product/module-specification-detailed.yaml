@@ -1,0 +1,373 @@
+# =================================================================
+# PRODUCT MODULE - DETAILED SPECIFICATION (MASTER FILE)
+# =================================================================
+# APPLICATION: SHIPCENTRAL SHIPPING MANAGEMENT
+# STAGE 5: DETAILED TECHNICAL SPECIFICATION
+# STATUS: READY FOR CODE GENERATION
+# =================================================================
+
+# This file serves as the MASTER FILE containing:
+# 1. ALL requirement-from-breakdown specifications
+# 2. USER ANSWER ADJUSTMENTS and preferences
+# 3. TECHNICAL IMPLEMENTATION DETAILS
+# 4. INTEGRATION SPECIFICATIONS
+
+# =================================================================
+# MODULE OVERVIEW
+# =================================================================
+module_info:
+  name: "Product"
+  laravel_module_name: "Product"
+  purpose: "Physical shipment supplies management with branch-specific catalogs"
+  type: "CREATE NEW"
+  complexity: "Medium"
+  estimated_development_time: "2-3 weeks"
+  
+application_context:
+  application_name: "ShipCentral"
+  business_domain: "Multi-branch shipping and logistics management"
+  module_role: "Manage physical supplies (boxes, tape, packaging materials) with branch-specific availability"
+  integration_with: ["User", "Branch", "Shipment"]
+
+development_info:
+  priority: "MEDIUM - Phase 2"
+  dependencies: ["User", "Branch"]
+  affects: ["Shipment"]
+  phase: "Business Core Modules (Phase 2 - Main Business Logic)"
+
+# =================================================================
+# USER ANSWERS INTEGRATION
+# =================================================================
+user_preferences:
+  product_types_focus: "Physical supplies only (boxes, tape, packaging materials)" # q1: answer "a"
+  inventory_tracking_level: "No inventory tracking - just product catalog" # q2: answer "a"
+  category_hierarchy_depth: "Single level categories only" # q3: answer "a"
+  addon_service_complexity: "Simple fixed prices only" # q4: answer "a"
+  product_branch_availability: "Branch-specific product catalogs" # q5: answer "b"
+  
+  ui_preferences:
+    product_management_workflow: "Separate pages for products, categories, and add-ons" # q6: answer "a"
+    product_selection_interface: "Visual grid with product images and quick actions" # q7: answer "d"
+    category_management_ui: "Simple list with add/edit/delete actions" # q8: answer "a"
+    addon_service_configuration: "Simple form with basic pricing options" # q9: answer "a"
+    bulk_operations_support: "Basic bulk actions (activate/deactivate, delete)" # q10: answer "b"
+  
+  technical_preferences:
+    product_search_optimization: "Basic database search with LIKE queries" # q11: answer "a"
+    pricing_calculation_strategy: "Real-time calculation on each request" # q12: answer "a"
+
+# =================================================================
+# DATABASE SCHEMA
+# =================================================================
+database_schema:
+  product_categories:
+    purpose: "Single level categories for physical supplies"
+    fields:
+      id: "bigint unsigned, auto_increment, primary key"
+      name: "varchar(255), not null"
+      description: "text, nullable"
+      is_active: "boolean, default true"
+      sort_order: "integer, default 0"
+      created_at: "timestamp"
+      updated_at: "timestamp"
+    indexes:
+      - "name"
+      - "is_active"
+      - "sort_order"
+    
+  products:
+    purpose: "Physical supplies catalog (boxes, tape, packaging materials)"
+    fields:
+      id: "bigint unsigned, auto_increment, primary key"
+      category_id: "bigint unsigned, not null, foreign key to product_categories.id"
+      name: "varchar(255), not null"
+      description: "text, nullable"
+      sku: "varchar(100), not null, unique"
+      image_path: "varchar(500), nullable"
+      price: "decimal(8,2), not null, default 0.00" # Simple fixed prices
+      unit: "varchar(50), not null" # piece, pack, roll, etc.
+      dimensions: "json, nullable" # L x W x H
+      weight: "decimal(8,3), nullable" # kg
+      is_active: "boolean, default true"
+      sort_order: "integer, default 0"
+      created_at: "timestamp"
+      updated_at: "timestamp"
+    indexes:
+      - "category_id"
+      - "sku"
+      - "name" # For basic search
+      - "is_active"
+      - "sort_order"
+    
+  branch_products:
+    purpose: "Branch-specific product availability"
+    fields:
+      id: "bigint unsigned, auto_increment, primary key"
+      branch_id: "bigint unsigned, not null, foreign key to branches.id"
+      product_id: "bigint unsigned, not null, foreign key to products.id"
+      is_available: "boolean, default true"
+      branch_price: "decimal(8,2), nullable" # Override global price
+      created_at: "timestamp"
+      updated_at: "timestamp"
+    indexes:
+      - "unique composite(branch_id, product_id)"
+      - "branch_id"
+      - "product_id"
+      - "is_available"
+
+# =================================================================
+# CONTROLLER ARCHITECTURE
+# =================================================================
+controller_architecture:
+  ProductAdminController:
+    purpose: "Company admin manages global product catalog"
+    access_level: "Company Admin"
+    route_prefix: "admin/products"
+    middleware: ["auth", "role:company_admin"]
+    methods:
+      index:
+        description: "List products with basic search"
+        ui_implementation: "DataTable with category filter, status filter"
+        search_optimization: "Basic database search with LIKE queries"
+      create:
+        description: "Add new product"
+        ui_implementation: "Product form with image upload"
+        validation: "Required fields validation"
+      store:
+        description: "Save new product"
+        pricing: "Simple fixed prices only"
+        business_logic: "Auto-generate SKU if needed"
+      show:
+        description: "View product details"
+        display: "Product info, pricing, branch availability"
+      edit:
+        description: "Edit product information"
+        ui_implementation: "Product form with image management"
+      update:
+        description: "Update product data"
+        audit_trail: "Log changes"
+      destroy:
+        description: "Delete product"
+        implementation: "Hard delete or deactivate"
+        
+  CategoryAdminController:
+    purpose: "Manage single-level product categories"
+    access_level: "Company Admin"
+    route_prefix: "admin/categories"
+    middleware: ["auth", "role:company_admin"]
+    methods:
+      index:
+        description: "List categories"
+        ui_implementation: "Simple list with add/edit/delete actions"
+      create:
+        description: "Add new category"
+        hierarchy: "Single level categories only"
+      store:
+        description: "Save new category"
+        validation: "Basic validation"
+      edit:
+        description: "Edit category"
+        ui_implementation: "Simple form"
+      update:
+        description: "Update category"
+        audit_trail: "Log changes"
+      destroy:
+        description: "Delete category"
+        constraints: "Check for products using category"
+        
+  BranchProductController:
+    purpose: "Branch admin manages branch-specific product availability"
+    access_level: "Branch Admin"
+    route_prefix: "admin/branch-products"
+    middleware: ["auth", "role:branch_admin", "branch.isolation"]
+    methods:
+      index:
+        description: "View branch product catalog"
+        ui_implementation: "Visual grid with product images and quick actions"
+        scope: "Products available to current branch"
+      toggleAvailability:
+        description: "Toggle product availability for branch"
+        business_logic: "Enable/disable products for current branch"
+      updatePrice:
+        description: "Update branch-specific pricing"
+        pricing: "Override global price for branch"
+        
+  ProductSelectionController:
+    purpose: "Staff product selection during shipment creation"
+    access_level: "Branch Staff"
+    route_prefix: "staff/products"
+    middleware: ["auth", "role:branch_staff"]
+    methods:
+      catalog:
+        description: "Display available products for selection"
+        ui_implementation: "Visual grid with product images and quick actions"
+        scope: "Products available to staff's branch"
+      select:
+        description: "Select products for shipment"
+        business_logic: "Add products to shipment with pricing"
+      search:
+        description: "Search products"
+        optimization: "Basic database search with LIKE queries"
+
+# =================================================================
+# MODEL RELATIONSHIPS & BUSINESS LOGIC
+# =================================================================
+models_and_relationships:
+  ProductCategory:
+    purpose: "Single level categories"
+    relationships:
+      - "hasMany(Product::class)"
+    business_methods:
+      - "getActiveProducts(): Collection"
+      - "getProductCount(): int"
+    scopes:
+      - "scopeActive()"
+      
+  Product:
+    purpose: "Physical supplies (boxes, tape, packaging materials)"
+    relationships:
+      - "belongsTo(ProductCategory::class, 'category_id')"
+      - "hasMany(BranchProduct::class)"
+      - "belongsToMany(Branch::class, 'branch_products')"
+    business_methods:
+      - "isAvailableInBranch(int $branchId): bool"
+      - "getBranchPrice(int $branchId): float"
+      - "getImageUrl(): ?string"
+      - "getDimensionsString(): string"
+    scopes:
+      - "scopeActive()"
+      - "scopeByCategory(int $categoryId)"
+      - "scopeAvailableInBranch(int $branchId)"
+      
+  BranchProduct:
+    purpose: "Branch-specific product availability"
+    relationships:
+      - "belongsTo(Branch::class)"
+      - "belongsTo(Product::class)"
+    business_methods:
+      - "getEffectivePrice(): float" # Branch price or global price
+      - "isAvailable(): bool"
+
+# =================================================================
+# VIEW STRUCTURE & UI IMPLEMENTATION
+# =================================================================
+view_structure:
+  admin_layout:
+    base_template: "layouts.admin"
+    navigation: "Product management menu"
+    
+  product_management:
+    index:
+      template: "product.admin.index"
+      ui_implementation: "Separate pages for products, categories, and add-ons"
+      features: ["search", "category_filter", "status_filter"]
+      
+    create:
+      template: "product.admin.create"
+      ui_implementation: "Product form with image upload"
+      fields: ["name", "category", "description", "sku", "price", "unit", "image"]
+      
+    show:
+      template: "product.admin.show"
+      display: "Product details, image, pricing, branch availability"
+      
+  category_management:
+    index:
+      template: "category.admin.index"
+      ui_implementation: "Simple list with add/edit/delete actions"
+      features: ["basic_crud", "sort_order"]
+      
+  branch_catalog:
+    index:
+      template: "product.branch.index"
+      ui_implementation: "Visual grid with product images and quick actions"
+      features: ["toggle_availability", "update_pricing", "bulk_actions"]
+      
+  staff_selection:
+    catalog:
+      template: "product.staff.catalog"
+      ui_implementation: "Visual grid with product images and quick actions"
+      features: ["product_selection", "search", "category_filter"]
+
+# =================================================================
+# ROUTING STRUCTURE
+# =================================================================
+routing_structure:
+  admin_routes:
+    prefix: "admin"
+    middleware: ["auth", "role:company_admin"]
+    routes:
+      - "Route::resource('products', 'ProductAdminController')"
+      - "Route::resource('categories', 'CategoryAdminController')"
+      
+  branch_routes:
+    prefix: "admin/branch"
+    middleware: ["auth", "role:branch_admin", "branch.isolation"]
+    routes:
+      - "Route::get('products', 'BranchProductController@index')"
+      - "Route::post('products/{id}/toggle', 'BranchProductController@toggleAvailability')"
+      - "Route::post('products/{id}/price', 'BranchProductController@updatePrice')"
+      
+  staff_routes:
+    prefix: "staff"
+    middleware: ["auth", "role:branch_staff"]
+    routes:
+      - "Route::get('products', 'ProductSelectionController@catalog')"
+      - "Route::get('products/search', 'ProductSelectionController@search')"
+
+# =================================================================
+# FILE STRUCTURE
+# =================================================================
+file_structure:
+  controllers:
+    - "Http/Controllers/ProductAdminController.php"
+    - "Http/Controllers/CategoryAdminController.php"
+    - "Http/Controllers/BranchProductController.php"
+    - "Http/Controllers/ProductSelectionController.php"
+    
+  models:
+    - "Entities/Product.php"
+    - "Entities/ProductCategory.php"
+    - "Entities/BranchProduct.php"
+    
+  views:
+    admin:
+      - "Resources/views/admin/products/index.blade.php"
+      - "Resources/views/admin/products/create.blade.php"
+      - "Resources/views/admin/products/show.blade.php"
+      - "Resources/views/admin/categories/index.blade.php"
+    branch:
+      - "Resources/views/branch/products/index.blade.php"
+    staff:
+      - "Resources/views/staff/products/catalog.blade.php"
+      
+  migrations:
+    - "Database/Migrations/xxxx_create_product_categories_table.php"
+    - "Database/Migrations/xxxx_create_products_table.php"
+    - "Database/Migrations/xxxx_create_branch_products_table.php"
+
+# =================================================================
+# SPECIFICATION SUMMARY
+# =================================================================
+specification_summary:
+  total_controllers: 4
+  total_models: 3
+  total_views: 6
+  
+  key_features:
+    - "Physical supplies focus (boxes, tape, packaging)"
+    - "No inventory tracking - catalog only"
+    - "Single level categories"
+    - "Branch-specific product availability"
+    - "Visual grid interface for selection"
+    - "Simple fixed pricing"
+
+# =================================================================
+# STATUS: READY FOR CODE GENERATION
+# =================================================================
+generation_readiness:
+  requirements_complete: true
+  user_answers_integrated: true
+  technical_details_specified: true
+  architecture_defined: true
+  ready_for_stage_6: true

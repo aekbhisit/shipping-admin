@@ -1,0 +1,13 @@
+{
+    "name": "Statement",
+    "alias": "statement",
+    "description": "",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\Statement\\Providers\\StatementServiceProvider"
+    ],
+    "aliases": {},
+    "files": [],
+    "requires": []
+}

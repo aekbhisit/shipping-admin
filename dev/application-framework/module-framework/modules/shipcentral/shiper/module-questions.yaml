@@ -1,0 +1,381 @@
+# MODULE QUESTIONS - SHIPPER MODULE
+# APPLICATION: SHIPCENTRAL SHIPPING MANAGEMENT
+# STAGE 3: CLARIFYING QUESTIONS FOR MODULE DEVELOPMENT
+# STATUS: AWAITING USER ANSWERS - UPDATED TO COVER ALL BREAKDOWN REQUIREMENTS
+
+analysis_summary:
+  detected_patterns:
+    - "Multi-carrier API integration module"
+    - "Three specialized controllers (Admin, API, Rate)"
+    - "Four core models with relationships"
+    - "Three major API integrations (Thailand Post, J&T, Flash Express)"
+    - "Real-time quote generation with caching"
+    - "Complete API failure handling"
+    - "Branch markup application logic"
+  
+  estimated_complexity: "High"
+  estimated_time: "3-4 weeks development"
+  reference_module: "User module (for architecture reference)"
+  
+  key_business_features:
+    - "Multi-carrier API integration with failover"
+    - "Real-time quote generation and comparison"
+    - "Label generation for all carriers"
+    - "Comprehensive API logging and monitoring"
+    - "Branch-specific markup rules"
+
+# =================================================================
+# BUSINESS LOGIC QUESTIONS (4 questions)
+# =================================================================
+
+q1_api_integration_strategy:
+  question: "How should the three carrier APIs (Thailand Post, J&T Express, Flash Express) be integrated?"
+  context: "Integration strategy affects performance, reliability, and maintenance complexity"
+  options:
+    a: "Sequential API calls with simple error handling"
+    b: "Parallel API calls with comprehensive failover"
+    c: "Cached quotes with real-time refresh on demand"
+    d: "Hybrid approach with parallel calls and intelligent caching"
+  implications:
+    a: "Simple implementation but slower performance"
+    b: "Fast performance but complex error handling"
+    c: "Good performance but may have stale data"
+    d: "Best performance and reliability but most complex"
+  your_answer: "1"
+
+q2_quote_generation_workflow:
+  question: "How should real-time quote generation work with multiple carriers?"
+  context: "Quote workflow affects user experience and system performance"
+  options:
+    a: "Generate quotes on-demand for each shipment"
+    b: "Pre-cache quotes for common routes and weights"
+    c: "Generate quotes with timeout fallback to cache"
+    d: "Smart caching based on usage patterns"
+  implications:
+    a: "Always fresh data but slower response"
+    b: "Fast response but limited coverage"
+    c: "Balanced approach with good reliability"
+    d: "Optimal performance but complex implementation"
+  your_answer: "qoute will able to generate on demand and only carrier in sametime will will generate after choose carrier"
+
+q3_branch_markup_application:
+  question: "How should branch-specific markup rules be applied to carrier quotes?"
+  context: "Markup strategy affects pricing consistency and profitability"
+  options:
+    a: "Fixed percentage markup per branch per carrier"
+    b: "Dynamic markup based on carrier and service type"
+    c: "Tiered markup based on shipment value/weight"
+    d: "Complex rules with carrier, service, and volume factors"
+  implications:
+    a: "Simple to implement and understand"
+    b: "More flexible pricing options"
+    c: "Value-based pricing strategy"
+    d: "Maximum flexibility but complex management"
+  your_answer: "a"
+
+q4_api_failure_handling:
+  question: "How should API failures be handled to ensure continuous operations?"
+  context: "Failure handling strategy affects business continuity"
+  options:
+    a: "Show error message and require manual retry"
+    b: "Fallback to cached quotes with warning"
+    c: "Automatic retry with exponential backoff"
+    d: "Multi-tier fallback with notifications"
+  implications:
+    a: "Simple but disrupts user workflow"
+    b: "Maintains workflow but may have outdated pricing"
+    c: "Good reliability but may delay responses"
+    d: "Best reliability but most complex implementation"
+  your_answer: "a"
+
+# =================================================================
+# UI/UX QUESTIONS (4 questions)
+# =================================================================
+
+q5_admin_interface_layout:
+  question: "How should the ShipperAdminController interface be organized?"
+  context: "Admin interface layout affects usability for company administrators"
+  options:
+    a: "Simple list view with basic CRUD operations"
+    b: "Dashboard with carrier status and quick actions"
+    c: "Tabbed interface with carriers, logs, and configuration"
+    d: "Advanced dashboard with real-time monitoring"
+  implications:
+    a: "Quick to implement but limited functionality"
+    b: "Good overview but may lack detailed management"
+    c: "Organized but may be overwhelming"
+    d: "Comprehensive but complex development"
+  your_answer: "a list show in datatable and form for create and edit"
+
+q6_quote_comparison_display:
+  question: "How should quote comparison be displayed to users?"
+  context: "Quote display affects decision-making speed and accuracy"
+  options:
+    a: "Simple table with carrier names and prices"
+    b: "Card-based layout with key details highlighted"
+    c: "Sortable table with filtering options"
+    d: "Interactive comparison with detailed breakdown"
+  implications:
+    a: "Clean and simple but limited information"
+    b: "Visual appeal but may lack comparison features"
+    c: "Functional but may be overwhelming"
+    d: "Comprehensive but complex interface"
+  your_answer: "no need to compare quote"
+
+q7_api_credential_management:
+  question: "How should API credentials be managed in the interface?"
+  context: "Credential management affects security and usability"
+  options:
+    a: "Simple form with masked password fields"
+    b: "Separate credential management page"
+    c: "In-place editing with confirmation"
+    d: "Advanced credential vault with audit trail"
+  implications:
+    a: "Basic security but easy to use"
+    b: "Better organization but additional navigation"
+    c: "Convenient but may lack security features"
+    d: "Maximum security but complex implementation"
+  your_answer: "text input with json format"
+
+q8_tracking_update_interface:
+  question: "How should tracking updates be displayed and managed?"
+  context: "Tracking interface affects shipment monitoring efficiency"
+  options:
+    a: "Simple list of tracking events"
+    b: "Timeline view with status visualization"
+    c: "Map integration with location tracking"
+    d: "Interactive timeline with webhook management"
+  implications:
+    a: "Simple to implement but basic functionality"
+    b: "Better visualization but no geographic context"
+    c: "Rich experience but requires map integration"
+    d: "Comprehensive but complex development"
+  your_answer: "no tracking update"
+
+# =================================================================
+# TECHNICAL QUESTIONS (4 questions)
+# =================================================================
+
+q9_controller_architecture_implementation:
+  question: "How should the three specialized controllers (ShipperAdmin, ShipperApi, Rate) be structured?"
+  context: "Controller architecture affects maintainability and separation of concerns"
+  options:
+    a: "Traditional REST controllers with shared services"
+    b: "Specialized controllers with dedicated service classes"
+    c: "API-first design with controller facades"
+    d: "Microservice-style controllers with event handling"
+  implications:
+    a: "Standard Laravel approach, easy to understand"
+    b: "Better separation but more complex structure"
+    c: "Flexible API design but additional complexity"
+    d: "Scalable architecture but significant complexity"
+  your_answer: "b"
+
+q10_database_optimization_strategy:
+  question: "How should the database be optimized for API calls and rate caching?"
+  context: "Database strategy affects performance and scalability"
+  options:
+    a: "Standard indexes on foreign keys and timestamps"
+    b: "Specialized indexes for rate lookups and API logs"
+    c: "Partitioned tables for high-volume API logs"
+    d: "Redis caching layer with database fallback"
+  implications:
+    a: "Standard performance, easy maintenance"
+    b: "Better query performance, moderate complexity"
+    c: "Excellent for high volume but complex management"
+    d: "Best performance but requires Redis infrastructure"
+  your_answer: "a"
+
+q11_api_client_implementation:
+  question: "How should the HTTP API clients for the three carriers be implemented?"
+  context: "API client design affects reliability and maintainability"
+  options:
+    a: "Simple Guzzle HTTP clients with basic error handling"
+    b: "Dedicated client classes with retry logic"
+    c: "Configurable clients with adapter pattern"
+    d: "Full SDK implementation with circuit breakers"
+  implications:
+    a: "Quick implementation but limited error handling"
+    b: "Good reliability with moderate complexity"
+    c: "Flexible and testable but more development"
+    d: "Enterprise-grade but significant complexity"
+  your_answer: "a"
+
+q12_performance_monitoring:
+  question: "How should API performance and system health be monitored?"
+  context: "Monitoring strategy affects operational visibility and troubleshooting"
+  options:
+    a: "Basic logging to database tables"
+    b: "Structured logging with performance metrics"
+    c: "Real-time monitoring dashboard"
+    d: "Comprehensive APM with alerting"
+  implications:
+    a: "Simple setup but limited insights"
+    b: "Good data collection with manual analysis"
+    c: "Real-time visibility but additional infrastructure"
+    d: "Complete monitoring but complex implementation"
+  your_answer: "a"
+
+# =================================================================
+# VALIDATION QUESTIONS (4 questions)
+# =================================================================
+
+q13_api_credential_validation:
+  question: "How should API credentials be validated?"
+  context: "Credential validation affects security and error prevention"
+  options:
+    a: "Basic format validation only"
+    b: "Test connection on save"
+    c: "Scheduled validation with alerts"
+    d: "Real-time validation with auto-disable"
+  implications:
+    a: "Quick setup but may store invalid credentials"
+    b: "Immediate feedback but slower save process"
+    c: "Proactive monitoring but delayed detection"
+    d: "Automatic protection but complex logic"
+  your_answer: "a"
+
+q14_quote_data_validation:
+  question: "How should quote data from carriers be validated?"
+  context: "Quote validation affects pricing accuracy and system reliability"
+  options:
+    a: "Basic data type validation"
+    b: "Business rule validation (min/max prices)"
+    c: "Cross-carrier validation for reasonableness"
+    d: "Machine learning validation based on historical data"
+  implications:
+    a: "Simple but may allow invalid quotes"
+    b: "Good basic protection with clear rules"
+    c: "Better accuracy detection but complex logic"
+    d: "Intelligent validation but requires ML infrastructure"
+  your_answer: "a"
+
+q15_rate_cache_validation:
+  question: "How should cached rates be validated for freshness and accuracy?"
+  context: "Cache validation affects pricing accuracy and customer trust"
+  options:
+    a: "Simple time-based expiration"
+    b: "Conditional refresh based on age and usage"
+    c: "Background validation with automatic refresh"
+    d: "Intelligent cache with predictive refresh"
+  implications:
+    a: "Easy to implement but may serve stale data"
+    b: "Better balance but moderate complexity"
+    c: "Always fresh data but higher API usage"
+    d: "Optimal freshness but complex prediction logic"
+  your_answer: "a"
+
+q16_shipment_data_validation:
+  question: "How should shipment data be validated before sending to carrier APIs?"
+  context: "Shipment validation affects API success rates and error handling"
+  options:
+    a: "Basic required field validation"
+    b: "Carrier-specific validation rules"
+    c: "Pre-flight validation with test calls"
+    d: "Advanced validation with address verification"
+  implications:
+    a: "Quick processing but higher API error rates"
+    b: "Better success rates with carrier knowledge"
+    c: "Highest success rates but additional API calls"
+    d: "Complete validation but complex and expensive"
+  your_answer: "a"
+
+# =================================================================
+# INTEGRATION QUESTIONS (4 questions)
+# =================================================================
+
+q17_user_module_integration:
+  question: "How should the Shipper module integrate with the User module for authentication?"
+  context: "User integration affects security and access control"
+  options:
+    a: "Standard Laravel authentication middleware"
+    b: "Role-based access with shipper-specific permissions"
+    c: "Branch-aware authentication with carrier access control"
+    d: "Advanced RBAC with API-level permissions"
+  implications:
+    a: "Simple but basic access control"
+    b: "Good role separation with moderate complexity"
+    c: "Branch isolation with good security"
+    d: "Complete access control but complex setup"
+  your_answer: "a"
+
+q18_branch_module_integration:
+  question: "How should branch-specific markup rules be integrated?"
+  context: "Branch integration affects pricing consistency across locations"
+  options:
+    a: "Simple branch_id foreign key relationship"
+    b: "Branch-specific configuration tables"
+    c: "Dynamic branch rule engine"
+    d: "Multi-tier branch hierarchy with inheritance"
+  implications:
+    a: "Basic branch association but limited flexibility"
+    b: "Good configuration options with clear structure"
+    c: "Maximum flexibility but complex rule management"
+    d: "Enterprise-level features but significant complexity"
+  your_answer: "a"
+
+q19_shipment_module_integration:
+  question: "How should the Shipper module provide quotes to the Shipment module?"
+  context: "Shipment integration affects the core shipping workflow"
+  options:
+    a: "Direct database queries from Shipment module"
+    b: "API endpoints for quote requests"
+    c: "Event-driven quote generation"
+    d: "Real-time quote streaming with WebSockets"
+  implications:
+    a: "Simple but tight coupling between modules"
+    b: "Good separation with clear API contract"
+    c: "Loose coupling but complex event handling"
+    d: "Real-time updates but significant complexity"
+  your_answer: "shimpent need to call to actual shipper api each time then markup will be apply"
+
+q20_audit_module_integration:
+  question: "How should API calls and changes be logged for the Audit module?"
+  context: "Audit integration affects compliance and troubleshooting capabilities"
+  options:
+    a: "Basic activity logging to audit tables"
+    b: "Structured event logging with context"
+    c: "Real-time audit streaming"
+    d: "Complete audit trail with change tracking"
+  implications:
+    a: "Simple compliance but limited detail"
+    b: "Good audit data with searchable context"
+    c: "Real-time monitoring but additional infrastructure"
+    d: "Complete compliance but complex implementation"
+  your_answer: "a"
+
+# =================================================================
+# SUMMARY FOR AI PROCESSING
+# =================================================================
+completion_requirements:
+  total_questions: 20
+  categories_covered:
+    - "Business Logic: 4 questions (API integration, quotes, markup, failures)"
+    - "UI/UX: 4 questions (admin interface, quote display, credentials, tracking)"
+    - "Technical: 4 questions (controllers, database, API clients, monitoring)"
+    - "Validation: 4 questions (credentials, quotes, cache, shipment data)"
+    - "Integration: 4 questions (User, Branch, Shipment, Audit modules)"
+  
+  breakdown_coverage:
+    controllers_addressed: "All 3 controllers (ShipperAdmin, ShipperApi, Rate)"
+    models_addressed: "All 4 models (Shipper, ShipperApi, ShippingRate, ApiLog)"
+    api_integrations_addressed: "All 3 APIs (Thailand Post, J&T, Flash Express)"
+    business_features_addressed: "All core features from breakdown"
+
+# =================================================================
+# INSTRUCTIONS FOR USER
+# =================================================================
+next_steps:
+  instructions: |
+    Please review all 20 questions and provide your answers by filling the 'your_answer' fields.
+    Each question covers specific aspects from the module breakdown to ensure complete implementation.
+    
+    After you complete the answers, I will:
+    1. Generate detailed specification based on your choices
+    2. Wait for your approval of the specification
+    3. Generate ALL 3 controllers with complete methods
+    4. Generate ALL 4 models with proper relationships
+    5. Implement ALL 3 API integrations
+    6. Create complete working Shipper module
+
+  reminder: "This covers ALL details from the module breakdown - no features will be missed!" 

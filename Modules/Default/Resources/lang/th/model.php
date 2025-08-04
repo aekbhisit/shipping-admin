@@ -1,0 +1,36 @@
+<?php
+
+return [
+    'name'=>"รุ่น",
+    'datatable'=>[
+        'sequence'=>'ลำดับ',
+        'image'=>'รูป',
+        'name'=>'ชื่อ',
+        'brand'=>'แบรนด์',
+        'sort'=>'จัดเรียง',
+        'updated_at'=>'อัพเดท',
+        'manage'=>'จัดการ',
+    ],
+    'field'=>[
+        'lang_th'=>'(TH)',
+        'lang_en'=>'(EN)',
+        'name'=>'ชื่อ',
+        'name_placeholder'=>'กรุณาใส่ชื่อ',
+        'desc'=>'คำอธิบาย',
+        'desc_placeholder'=>'กรุณาใส่คำอธิบาย',
+        'detail'=>'คำอธิบาย',
+        'detail_placeholder'=>'กรุณาใส่คำอธิบาย',
+        'image'=>'รูป',
+        'image_placeholder'=>'กรุณาอัพโหลดรูป',
+        'image_size'=>'ขนาดรูปแนะนำ 100*100 px',
+        'brand'=>'แบรนด์',
+        'brand_placeholder'=>'กรุณาเลือกแบรนด์',
+        'no_brand'=>'-- ไม่เลือกแบรนด์ -- ',
+        'status'=>'สถานะ',
+        'status_on'=>'เปิด',
+        'status_off'=>'ปิด',
+    ],
+];
+
+
+

@@ -1,0 +1,141 @@
+# =================================================================
+# FROM APPLICATION BREAKDOWN TEMPLATE
+# =================================================================
+# Use this template when transferring from 07-module-breakdown-planning.yaml
+# to individual module requirements
+# =================================================================
+
+# BASIC MODULE INFO (from module breakdown)
+module_folder: "[ModuleName from breakdown]"
+output_organization: true
+application_name: "[ApplicationName from breakdown]"
+module_type: "[CREATE NEW or EXTEND EXISTING]"
+
+# APPLICATION CONTEXT (transfer from breakdown)
+application_context:
+  application_name: "[from breakdown]"
+  business_domain: "[from breakdown]"
+  module_role: "[from breakdown description]"
+  integration_with: ["[list from breakdown affects/dependencies]"]
+  technology_stack:
+    framework: "[from Step 6 technical architecture]"
+    frontend: "[from Step 6 technical architecture]"
+    database: "[from Step 6 technical architecture]"
+    ui: "[from Step 6 technical architecture]"
+    architecture: "[from Step 6 technical architecture]"
+
+# TRANSFER COMPLETE MODULE BREAKDOWN DATA
+module_breakdown_transfer:
+  # COPY EXACTLY from 07-module-breakdown-planning.yaml
+  core_features: |
+    [Copy complete core_features section from breakdown]
+  
+  controllers_needed: |
+    [Copy ALL controllers_needed from breakdown]
+    
+  models_needed: |
+    [Copy ALL models_needed from breakdown]
+    
+  business_purpose: |
+    [Copy business_purpose from breakdown]
+    
+  key_enhancements: |
+    [Copy any key_enhancements from breakdown]
+    
+  api_integrations: |
+    [Copy any api_integrations from breakdown]
+    
+  workflow_steps: |
+    [Copy any workflow_steps from breakdown]
+
+# USER REQUIREMENT (enhanced with breakdown data)
+user_requirement: |
+  [Start with breakdown description, then add detailed requirements]
+  
+  **Business Context:** 
+  [Copy from breakdown business_purpose]
+  
+  **Core Features:**
+  [List from breakdown core_features]
+  
+  **Controllers Required:**
+  [List from breakdown controllers_needed with full details]
+  
+  **Models Required:**
+  [List from breakdown models_needed with relationships]
+  
+  **Integration Requirements:**
+  [List from breakdown dependencies and affects]
+
+# TECHNICAL PREFERENCES (from Step 6)
+technical_preferences:
+  framework: "[exact version from Step 6]"
+  frontend: "[exact stack from Step 6]"
+  database: "[exact database from Step 6]"
+  architecture: "[exact pattern from Step 6]"
+
+# CONTROLLER PATTERN (from breakdown)
+controller_pattern: "[Primary controller name from breakdown]"
+
+# DEVELOPMENT INFO (from breakdown)
+development_info:
+  priority: "[priority from breakdown]"
+  development_estimate: "[estimate from breakdown]"
+  dependencies: ["[list from breakdown]"]
+  affects: ["[list from breakdown]"]
+  phase: "[phase from breakdown]"
+
+# =================================================================
+# EXAMPLE FILLED OUT FOR SHIPPER MODULE:
+# =================================================================
+# module_folder: "Shipper"
+# application_name: "ShipCentral"
+# module_type: "CREATE NEW"
+#
+# module_breakdown_transfer:
+#   core_features: |
+#     - Thailand Post API integration
+#     - J&T Express API integration  
+#     - Flash Express API integration
+#     - Real-time quote generation
+#     - Label generation and printing
+#     - Shipment tracking integration
+#     - API failure handling with cached quotes
+#
+#   controllers_needed: |
+#     - ShipperAdminController: Company admin manages API credentials
+#     - ShipperApiController: Handle API calls and responses
+#     - RateController: Manage shipping rates and comparisons
+#
+#   models_needed: |
+#     - Shipper: Shipping carrier information
+#     - ShipperApi: API credentials and configuration
+#     - ShippingRate: Rate cache and history
+#     - ApiLog: API call logging and monitoring
+#
+# user_requirement: |
+#   Create comprehensive Shipper module for ShipCentral's carrier API integrations.
+#   
+#   **Controllers Required:**
+#   - ShipperAdminController: Company admin manages API credentials
+#   - ShipperApiController: Handle API calls and responses
+#   - RateController: Manage shipping rates and comparisons
+#   
+#   **Models Required:**
+#   - Shipper: Shipping carrier information
+#   - ShipperApi: API credentials and configuration
+#   - ShippingRate: Rate cache and history
+#   - ApiLog: API call logging and monitoring
+# =================================================================
+
+# =================================================================
+# INSTRUCTIONS FOR AI:
+# When processing this template:
+# 1. Extract ALL controller details from breakdown
+# 2. Extract ALL model details from breakdown  
+# 3. Transfer ALL api_integrations if present
+# 4. Transfer ALL workflow_steps if present
+# 5. Maintain exact technology stack from Step 6
+# 6. Preserve development estimates and dependencies
+# 7. NEVER default to generic controllers - use breakdown specifications
+# ================================================================= 

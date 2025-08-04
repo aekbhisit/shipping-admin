@@ -1,0 +1,553 @@
+# =================================================================
+# AUDIT MODULE - DETAILED SPECIFICATION (MASTER FILE)
+# =================================================================
+# APPLICATION: SHIPCENTRAL SHIPPING MANAGEMENT
+# STAGE 5: DETAILED TECHNICAL SPECIFICATION
+# STATUS: READY FOR CODE GENERATION
+# =================================================================
+
+# This file serves as the MASTER FILE containing:
+# 1. ALL requirement-from-breakdown specifications
+# 2. USER ANSWER ADJUSTMENTS and preferences
+# 3. TECHNICAL IMPLEMENTATION DETAILS
+# 4. INTEGRATION SPECIFICATIONS
+
+# =================================================================
+# MODULE OVERVIEW
+# =================================================================
+module_info:
+  name: "Audit"
+  laravel_module_name: "Audit"
+  purpose: "Compliance tracking and audit trails for all data modifications with simple interface"
+  type: "CREATE NEW"
+  complexity: "Medium"
+  estimated_development_time: "2-3 weeks"
+  
+application_context:
+  application_name: "ShipCentral"
+  business_domain: "Multi-branch shipping and logistics management"
+  module_role: "Compliance and audit trail management for business operations and regulatory requirements"
+  integration_with: ["User", "Branch", "Customer", "Product", "Shipment", "Shipper"]
+
+development_info:
+  priority: "MEDIUM - Phase 3"
+  dependencies: ["User", "Branch", "Customer", "Product", "Shipment", "Shipper"]
+  affects: []
+  phase: "Support Modules (Phase 3 - Additional Features)"
+
+# =================================================================
+# USER ANSWERS INTEGRATION
+# =================================================================
+user_preferences:
+  tracking_scope: "All data modifications (create, update, delete)" # q1: answer "a"
+  user_activity_logging: "Login, logout, and significant actions" # q2: answer "b"
+  data_retention_policy: "Keep audit logs for 2 years" # q3: answer "b"
+  compliance_reporting_needs: "Basic compliance reports only" # q4: answer "b"
+  sensitive_data_protection: "Hash/encrypt sensitive data in logs" # q5: answer "b"
+  
+  ui_preferences:
+    audit_log_viewing_interface: "Simple table with basic filtering" # q6: answer "a"
+    search_filtering_complexity: "Basic search with date and user filters" # q7: answer "b"
+    report_generation_interface: "Simple reports with basic charts" # q8: answer "b"
+    admin_dashboard_complexity: "Basic dashboard with summary statistics" # q9: answer "b"
+    export_functionality_level: "Basic CSV export only" # q10: answer "a"
+  
+  technical_preferences:
+    audit_data_storage_approach: "Dedicated audit tables separate from main data" # q11: answer "a"
+    logging_performance_strategy: "Synchronous logging with Eloquent observers" # q12: answer "b"
+    search_optimization_level: "Basic database indexes on common fields" # q13: answer "a"
+    data_archiving_automation: "Manual archiving process" # q14: answer "a"
+    cross_module_integration_method: "Eloquent observers for automatic tracking" # q15: answer "a"
+  
+  validation_preferences:
+    audit_data_integrity_checks: "Basic validation of required fields" # q16: answer "a"
+    user_permission_audit_validation: "Simple role-based audit access" # q17: answer "a"
+    compliance_validation_requirements: "Basic compliance check during operations" # q18: answer "b"
+  
+  integration_preferences:
+    real_time_monitoring_needs: "No real-time monitoring needed" # q19: answer "a"
+    alert_notification_requirements: "No alerts needed" # q20: answer "a"
+
+# =================================================================
+# DATABASE SCHEMA
+# =================================================================
+database_schema:
+  audit_logs:
+    purpose: "All data modifications tracking"
+    fields:
+      id: "bigint unsigned, auto_increment, primary key"
+      auditable_type: "varchar(255), not null" # Model class name
+      auditable_id: "bigint unsigned, not null" # Model ID
+      event_type: "enum('created', 'updated', 'deleted'), not null"
+      old_values: "json, nullable" # Previous data (for updates/deletes)
+      new_values: "json, nullable" # New data (for creates/updates)
+      changed_fields: "json, nullable" # Array of changed field names
+      
+      # User and context
+      user_id: "bigint unsigned, nullable, foreign key to users.id"
+      branch_id: "bigint unsigned, nullable, foreign key to branches.id"
+      ip_address: "varchar(45), nullable"
+      user_agent: "varchar(500), nullable"
+      
+      # Additional context
+      url: "varchar(500), nullable"
+      method: "varchar(10), nullable" # HTTP method
+      notes: "text, nullable" # Additional context
+      
+      created_at: "timestamp"
+    indexes:
+      - "auditable_type" # Model filtering
+      - "auditable_id" # Record filtering
+      - "event_type" # Event filtering
+      - "user_id" # User activity tracking
+      - "branch_id" # Branch filtering
+      - "created_at" # Date sorting
+      - "composite(auditable_type, auditable_id)" # Model record lookup
+      - "composite(user_id, created_at)" # User activity timeline
+    
+  user_activity_logs:
+    purpose: "Login, logout, and significant actions tracking"
+    fields:
+      id: "bigint unsigned, auto_increment, primary key"
+      user_id: "bigint unsigned, not null, foreign key to users.id"
+      branch_id: "bigint unsigned, nullable, foreign key to branches.id"
+      activity_type: "enum('login', 'logout', 'password_change', 'profile_update', 'failed_login'), not null"
+      description: "varchar(500), not null"
+      ip_address: "varchar(45), nullable"
+      user_agent: "varchar(500), nullable"
+      session_id: "varchar(255), nullable"
+      additional_data: "json, nullable" # Extra context data
+      created_at: "timestamp"
+    indexes:
+      - "user_id" # User activity lookup
+      - "branch_id" # Branch activity
+      - "activity_type" # Activity filtering
+      - "created_at" # Date sorting
+      - "composite(user_id, activity_type)" # User specific activity
+      - "composite(branch_id, created_at)" # Branch activity timeline
+    
+  compliance_reports:
+    purpose: "Basic compliance reports storage"
+    fields:
+      id: "bigint unsigned, auto_increment, primary key"
+      report_type: "enum('data_access', 'user_activity', 'data_changes', 'branch_activity'), not null"
+      title: "varchar(255), not null"
+      description: "text, nullable"
+      filters_applied: "json, nullable" # Report parameters
+      report_data: "json, not null" # Generated report data
+      file_path: "varchar(500), nullable" # Exported file path
+      generated_by: "bigint unsigned, not null, foreign key to users.id"
+      generated_for_branch: "bigint unsigned, nullable, foreign key to branches.id"
+      generated_at: "timestamp"
+      expires_at: "timestamp, nullable"
+    indexes:
+      - "report_type" # Report filtering
+      - "generated_by" # User reports
+      - "generated_for_branch" # Branch reports
+      - "generated_at" # Date sorting
+
+# =================================================================
+# CONTROLLER ARCHITECTURE
+# =================================================================
+controller_architecture:
+  AuditController:
+    purpose: "Main audit log viewing and searching"
+    access_level: "Company Admin and Branch Admin"
+    route_prefix: "admin/audit"
+    middleware: ["auth", "role:company_admin,branch_admin", "audit.access"]
+    methods:
+      index:
+        description: "View audit logs with basic filtering"
+        ui_implementation: "Simple table with basic filtering"
+        search: "Basic search with date and user filters"
+        scope: "Company Admin: all logs, Branch Admin: branch logs only"
+      show:
+        description: "View specific audit log details"
+        display: "Detailed audit record with before/after comparison"
+      search:
+        description: "Advanced audit log search"
+        optimization: "Basic database indexes on common fields"
+        filters: ["date_range", "user", "event_type", "model_type"]
+      export:
+        description: "Export audit logs"
+        functionality: "Basic CSV export only"
+        scope: "Based on user access level"
+        
+  UserActivityController:
+    purpose: "User activity monitoring and reporting"
+    access_level: "Company Admin and Branch Admin"
+    route_prefix: "admin/audit/activity"
+    middleware: ["auth", "role:company_admin,branch_admin", "audit.access"]
+    methods:
+      index:
+        description: "View user activity logs"
+        ui_implementation: "Simple table with basic filtering"
+        tracking: "Login, logout, and significant actions"
+      userTimeline:
+        description: "View specific user's activity timeline"
+        display: "Chronological activity list"
+        scope: "Branch admin sees branch users only"
+      branchActivity:
+        description: "Branch activity summary"
+        ui_implementation: "Basic dashboard with summary statistics"
+        metrics: "User logins, active sessions, failed attempts"
+        
+  ComplianceController:
+    purpose: "Compliance reporting and management"
+    access_level: "Company Admin"
+    route_prefix: "admin/compliance"
+    middleware: ["auth", "role:company_admin"]
+    methods:
+      index:
+        description: "Compliance dashboard"
+        ui_implementation: "Basic dashboard with summary statistics"
+        reports: "Basic compliance reports only"
+      generateReport:
+        description: "Generate compliance report"
+        ui_implementation: "Simple reports with basic charts"
+        types: ["data_access", "user_activity", "data_changes", "branch_activity"]
+      viewReport:
+        description: "View generated compliance report"
+        display: "Report data with basic charts"
+      exportReport:
+        description: "Export compliance report"
+        functionality: "Basic CSV export only"
+      archiveLogs:
+        description: "Archive old audit logs"
+        process: "Manual archiving process"
+        retention: "Keep audit logs for 2 years"
+
+# =================================================================
+# SERVICE LAYER
+# =================================================================
+service_architecture:
+  AuditService:
+    purpose: "Core audit logging functionality"
+    methods:
+      - "logDataChange(string $model, int $id, string $event, array $oldData, array $newData): void"
+      - "logUserActivity(int $userId, string $activity, array $context): void"
+      - "getAuditLogs(array $filters, int $perPage = 20): LengthAwarePaginator"
+      - "searchAuditLogs(string $query, array $filters): Collection"
+      - "getUserActivityLogs(int $userId, array $filters): Collection"
+      - "getBranchActivitySummary(int $branchId, array $dateRange): array"
+      
+  ComplianceService:
+    purpose: "Compliance reporting and validation"
+    methods:
+      - "generateComplianceReport(string $type, array $filters): array"
+      - "validateComplianceRequirements(): array"
+      - "archiveOldLogs(Carbon $cutoffDate): int"
+      - "getDataRetentionStatus(): array"
+      - "exportAuditData(array $filters, string $format): string"
+      
+  DataProtectionService:
+    purpose: "Sensitive data protection in audit logs"
+    methods:
+      - "hashSensitiveData(array $data): array"
+      - "maskSensitiveFields(array $data): array"
+      - "encryptAuditData(array $data): array"
+      - "decryptAuditData(array $encryptedData): array"
+
+# =================================================================
+# ELOQUENT OBSERVERS
+# =================================================================
+observer_architecture:
+  UserObserver:
+    purpose: "Track user data changes"
+    events: ["created", "updated", "deleted"]
+    implementation: "Eloquent observers for automatic tracking"
+    
+  BranchObserver:
+    purpose: "Track branch configuration changes"
+    events: ["created", "updated", "deleted"]
+    implementation: "Eloquent observers for automatic tracking"
+    
+  CustomerObserver:
+    purpose: "Track customer data modifications"
+    events: ["created", "updated", "deleted"]
+    implementation: "Eloquent observers for automatic tracking"
+    
+  ShipmentObserver:
+    purpose: "Track shipment lifecycle changes"
+    events: ["created", "updated", "deleted"]
+    implementation: "Eloquent observers for automatic tracking"
+    
+  ProductObserver:
+    purpose: "Track product catalog changes"
+    events: ["created", "updated", "deleted"]
+    implementation: "Eloquent observers for automatic tracking"
+
+# =================================================================
+# MODEL RELATIONSHIPS & BUSINESS LOGIC
+# =================================================================
+models_and_relationships:
+  AuditLog:
+    purpose: "All data modifications tracking"
+    relationships:
+      - "belongsTo(User::class, 'user_id')"
+      - "belongsTo(Branch::class, 'branch_id')"
+      - "morphTo('auditable')" # Polymorphic relationship to any model
+    business_methods:
+      - "getModelName(): string"
+      - "getChangedFieldsCount(): int"
+      - "hasOldValues(): bool"
+      - "hasNewValues(): bool"
+      - "getFormattedChanges(): array"
+      - "isSensitiveData(): bool"
+    scopes:
+      - "scopeByModel(string $modelType)"
+      - "scopeByUser(int $userId)"
+      - "scopeByBranch(int $branchId)"
+      - "scopeByDateRange(Carbon $from, Carbon $to)"
+      - "scopeByEventType(string $eventType)"
+      
+  UserActivityLog:
+    purpose: "User activity and authentication tracking"
+    relationships:
+      - "belongsTo(User::class)"
+      - "belongsTo(Branch::class, 'branch_id')"
+    business_methods:
+      - "isLoginActivity(): bool"
+      - "isFailedAttempt(): bool"
+      - "getFormattedDescription(): string"
+      - "hasAdditionalData(): bool"
+    scopes:
+      - "scopeByUser(int $userId)"
+      - "scopeByActivityType(string $type)"
+      - "scopeByBranch(int $branchId)"
+      - "scopeToday()"
+      - "scopeFailedAttempts()"
+      
+  ComplianceReport:
+    purpose: "Compliance reporting storage"
+    relationships:
+      - "belongsTo(User::class, 'generated_by')"
+      - "belongsTo(Branch::class, 'generated_for_branch')"
+    business_methods:
+      - "isExpired(): bool"
+      - "getFormattedData(): array"
+      - "hasExportFile(): bool"
+      - "getFileSizeFormatted(): string"
+    scopes:
+      - "scopeByType(string $reportType)"
+      - "scopeByUser(int $userId)"
+      - "scopeActive()" # Not expired
+
+# =================================================================
+# MIDDLEWARE
+# =================================================================
+middleware_architecture:
+  AuditAccessMiddleware:
+    purpose: "Control access to audit functionality"
+    logic:
+      - "Company Admin: Full audit access"
+      - "Branch Admin: Branch-specific audit access only"
+      - "Branch Staff: No audit access"
+    implementation: "Simple role-based audit access"
+    
+  AuditLoggingMiddleware:
+    purpose: "Capture request context for audit logs"
+    implementation: "Synchronous logging with Eloquent observers"
+    data_captured: ["ip_address", "user_agent", "url", "method"]
+
+# =================================================================
+# VIEW STRUCTURE & UI IMPLEMENTATION
+# =================================================================
+view_structure:
+  admin_layout:
+    base_template: "layouts.admin"
+    navigation: "Audit management menu"
+    
+  audit_management:
+    index:
+      template: "audit.admin.index"
+      ui_implementation: "Simple table with basic filtering"
+      features: ["date_filter", "user_filter", "event_type_filter", "search"]
+      
+    show:
+      template: "audit.admin.show"
+      display: "Detailed audit record with before/after comparison"
+      features: ["data_comparison", "context_info", "user_details"]
+      
+    search:
+      template: "audit.admin.search"
+      ui_implementation: "Basic search with date and user filters"
+      filters: ["date_range", "user", "model_type", "event_type"]
+      
+  activity_monitoring:
+    index:
+      template: "audit.activity.index"
+      ui_implementation: "Simple table with basic filtering"
+      features: ["user_filter", "activity_type_filter", "date_filter"]
+      
+    user_timeline:
+      template: "audit.activity.timeline"
+      display: "Chronological user activity list"
+      features: ["activity_timeline", "context_details"]
+      
+    branch_summary:
+      template: "audit.activity.branch"
+      ui_implementation: "Basic dashboard with summary statistics"
+      metrics: ["login_count", "active_users", "failed_attempts"]
+      
+  compliance_interface:
+    dashboard:
+      template: "audit.compliance.dashboard"
+      ui_implementation: "Basic dashboard with summary statistics"
+      features: ["compliance_overview", "basic_charts"]
+      
+    reports:
+      template: "audit.compliance.reports"
+      ui_implementation: "Simple reports with basic charts"
+      features: ["report_generation", "export_options"]
+
+# =================================================================
+# ROUTING STRUCTURE
+# =================================================================
+routing_structure:
+  admin_routes:
+    prefix: "admin/audit"
+    middleware: ["auth", "role:company_admin,branch_admin", "audit.access"]
+    routes:
+      - "Route::get('/', 'AuditController@index')"
+      - "Route::get('/search', 'AuditController@search')"
+      - "Route::get('/export', 'AuditController@export')"
+      - "Route::get('/{id}', 'AuditController@show')"
+      
+  activity_routes:
+    prefix: "admin/audit/activity"
+    middleware: ["auth", "role:company_admin,branch_admin", "audit.access"]
+    routes:
+      - "Route::get('/', 'UserActivityController@index')"
+      - "Route::get('/user/{id}', 'UserActivityController@userTimeline')"
+      - "Route::get('/branch/{id}', 'UserActivityController@branchActivity')"
+      
+  compliance_routes:
+    prefix: "admin/compliance"
+    middleware: ["auth", "role:company_admin"]
+    routes:
+      - "Route::get('/', 'ComplianceController@index')"
+      - "Route::post('/generate', 'ComplianceController@generateReport')"
+      - "Route::get('/report/{id}', 'ComplianceController@viewReport')"
+      - "Route::get('/export/{id}', 'ComplianceController@exportReport')"
+      - "Route::post('/archive', 'ComplianceController@archiveLogs')"
+
+# =================================================================
+# INTEGRATION FEATURES
+# =================================================================
+integration_specifications:
+  cross_module_integration:
+    implementation: "Eloquent observers for automatic tracking"
+    modules_tracked: ["User", "Branch", "Customer", "Product", "Shipment", "Shipper"]
+    data_protection: "Hash/encrypt sensitive data in logs"
+    
+  user_module_integration:
+    activity_tracking: "Login, logout, password changes, profile updates"
+    failed_attempts: "Track failed login attempts for security"
+    
+  branch_module_integration:
+    isolation: "Branch admins see only their branch audit logs"
+    activity_summary: "Branch-specific activity reporting"
+    
+  compliance_integration:
+    validation: "Basic compliance check during operations"
+    reporting: "Basic compliance reports only"
+    retention: "Keep audit logs for 2 years"
+
+# =================================================================
+# DATA PROTECTION & SECURITY
+# =================================================================
+security_specifications:
+  sensitive_data_protection:
+    implementation: "Hash/encrypt sensitive data in logs"
+    sensitive_fields: ["password", "api_keys", "credit_card", "ssn"]
+    encryption_method: "Laravel encryption for sensitive audit data"
+    
+  access_control:
+    company_admin: "Full audit access across all branches"
+    branch_admin: "Branch-specific audit access only"
+    branch_staff: "No audit access"
+    
+  data_integrity:
+    validation: "Basic validation of required fields"
+    immutable_logs: "Audit logs cannot be modified after creation"
+    backup_strategy: "Regular backup of audit data"
+
+# =================================================================
+# FILE STRUCTURE
+# =================================================================
+file_structure:
+  controllers:
+    - "Http/Controllers/AuditController.php"
+    - "Http/Controllers/UserActivityController.php"
+    - "Http/Controllers/ComplianceController.php"
+    
+  services:
+    - "Services/AuditService.php"
+    - "Services/ComplianceService.php"
+    - "Services/DataProtectionService.php"
+    
+  models:
+    - "Entities/AuditLog.php"
+    - "Entities/UserActivityLog.php"
+    - "Entities/ComplianceReport.php"
+    
+  observers:
+    - "Observers/UserObserver.php"
+    - "Observers/BranchObserver.php"
+    - "Observers/CustomerObserver.php"
+    - "Observers/ShipmentObserver.php"
+    - "Observers/ProductObserver.php"
+    
+  middleware:
+    - "Http/Middleware/AuditAccessMiddleware.php"
+    - "Http/Middleware/AuditLoggingMiddleware.php"
+    
+  views:
+    admin:
+      - "Resources/views/admin/audit/index.blade.php"
+      - "Resources/views/admin/audit/show.blade.php"
+      - "Resources/views/admin/audit/search.blade.php"
+    activity:
+      - "Resources/views/audit/activity/index.blade.php"
+      - "Resources/views/audit/activity/timeline.blade.php"
+      - "Resources/views/audit/activity/branch.blade.php"
+    compliance:
+      - "Resources/views/audit/compliance/dashboard.blade.php"
+      - "Resources/views/audit/compliance/reports.blade.php"
+      
+  migrations:
+    - "Database/Migrations/xxxx_create_audit_logs_table.php"
+    - "Database/Migrations/xxxx_create_user_activity_logs_table.php"
+    - "Database/Migrations/xxxx_create_compliance_reports_table.php"
+
+# =================================================================
+# SPECIFICATION SUMMARY
+# =================================================================
+specification_summary:
+  total_controllers: 3
+  total_services: 3
+  total_models: 3
+  total_observers: 5
+  total_middleware: 2
+  total_views: 8
+  
+  key_features:
+    - "All data modifications tracking with Eloquent observers"
+    - "User activity logging (login, logout, significant actions)"
+    - "Simple interface with basic filtering and search"
+    - "Basic compliance reporting with CSV export"
+    - "Sensitive data protection with encryption"
+    - "2-year data retention policy"
+    - "Branch-specific access control for audit logs"
+    - "Manual archiving process"
+
+# =================================================================
+# STATUS: READY FOR CODE GENERATION
+# =================================================================
+generation_readiness:
+  requirements_complete: true
+  user_answers_integrated: true
+  technical_details_specified: true
+  architecture_defined: true
+  ready_for_stage_6: true

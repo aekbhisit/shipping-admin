@@ -1,0 +1,326 @@
+# MODULE QUESTIONS - SHIPMENT MODULE
+# APPLICATION: SHIPCENTRAL SHIPPING MANAGEMENT
+# STAGE 3: CLARIFYING QUESTIONS FOR MODULE DEVELOPMENT
+# STATUS: ANSWERS COMPLETE - READY FOR SPECIFICATION
+
+## 📋 **ANALYSIS SUMMARY:**
+
+analysis_summary:
+  detected_patterns:
+    - "7-step shipment creation workflow"
+    - "Single-page progressive form with session storage"
+    - "Real-time quote integration with carriers"
+    - "Branch-isolated shipment management"
+  
+  estimated_complexity: "High"
+  estimated_time: "3-4 weeks development"
+  reference_module: "User, Branch, Customer, Shipper modules (dependencies)"
+  
+  key_business_features:
+    - "7-step shipment creation workflow"
+    - "Real-time carrier quote integration"
+    - "Label printing and tracking"
+    - "Branch isolation enforcement"
+
+## ❓ **CLARIFYING QUESTIONS:**
+
+### **1. BUSINESS LOGIC (Shipment Workflow & Operations):**
+
+q1_workflow_navigation:
+  question: "How should users navigate through the 7-step shipment workflow?"
+  context: "Navigation affects user experience and completion rates"
+  options:
+    a: "Linear progression - must complete steps in order"
+    b: "Free navigation - can jump between completed steps"
+    c: "Smart navigation - can skip steps with defaults"
+    d: "Hybrid - linear first time, free navigation after"
+  implications:
+    a: "Ensures data completeness but restrictive"
+    d: "Flexible but maintains data integrity"
+  your_answer: "a"
+
+q2_session_data_persistence:
+  question: "How long should incomplete shipment data be stored?"
+  context: "Data persistence affects user experience and storage requirements"
+  options:
+    a: "Session-based only (lost on browser close)"
+    b: "24 hours with automatic cleanup"
+    c: "Until manually deleted by user"
+    d: "Configurable retention period"
+  implications:
+    a: "No storage overhead but data loss risk"
+    b: "Good balance of persistence and cleanup"
+  your_answer: "a"
+
+q3_quote_refresh_strategy:
+  question: "How should shipping rate quotes be refreshed and validated?"
+  context: "Quote refresh affects accuracy and user experience"
+  options:
+    a: "Manual refresh button only"
+    b: "Automatic refresh after package details change"
+    c: "Time-based refresh (e.g., every 5 minutes)"
+    d: "Smart refresh based on data changes"
+  implications:
+    b: "Responsive to changes"
+    d: "Optimal user experience"
+  your_answer: "b"
+
+q4_shipment_modification_policy:
+  question: "What shipment details can be modified after creation?"
+  context: "Modification policy affects business operations and carrier integration"
+  options:
+    a: "No modifications after creation"
+    b: "Limited modifications before pickup"
+    c: "Full modifications with carrier approval"
+    d: "Status-based modification rules"
+  implications:
+    b: "Practical flexibility"
+    d: "Business-appropriate rules"
+  your_answer: "c"
+
+q5_branch_shipment_isolation:
+  question: "How strict should branch shipment isolation be?"
+  context: "Isolation affects data access and business operations"
+  options:
+    a: "Complete isolation - no cross-branch visibility"
+    b: "Company admin can view all shipments"
+    c: "Branch admin can view related branch shipments"
+    d: "Configurable sharing for business needs"
+  implications:
+    b: "Administrative oversight"
+    d: "Flexible business rules"
+  your_answer: "a"
+
+### **2. UI/UX (Shipment Creation Interface):**
+
+q6_wizard_interface_style:
+  question: "How should the 7-step wizard interface be designed?"
+  context: "Interface design affects user adoption and efficiency"
+  options:
+    a: "Single page with step tabs"
+    b: "Multi-page with progress indicator"
+    c: "Accordion-style expandable sections"
+    d: "Modal-based step progression"
+  implications:
+    a: "Fast navigation but potentially overwhelming"
+    b: "Clear progression but slower navigation"
+  your_answer: "a"
+
+q7_progress_indicator_detail:
+  question: "What level of detail should the progress indicator show?"
+  context: "Progress indication affects user orientation and confidence"
+  options:
+    a: "Simple step numbers (1, 2, 3...)"
+    b: "Step names with completion status"
+    c: "Detailed progress with validation status"
+    d: "Estimated time remaining per step"
+  implications:
+    b: "Clear and informative"
+    c: "Comprehensive feedback"
+  your_answer: "a"
+
+q8_quote_comparison_display:
+  question: "How should carrier rate comparisons be displayed?"
+  context: "Quote display affects decision making and user experience"
+  options:
+    a: "Simple table with rates and delivery times"
+    b: "Card-based layout with carrier branding"
+    c: "Detailed comparison with service features"
+    d: "Sortable table with customizable columns"
+  implications:
+    b: "Visual and brand-aware"
+    c: "Comprehensive information"
+  your_answer: "b"
+
+q9_error_handling_approach:
+  question: "How should validation errors be handled in the workflow?"
+  context: "Error handling affects user experience and completion rates"
+  options:
+    a: "Immediate validation with inline errors"
+    b: "Step validation on next button click"
+    c: "Final validation before submission"
+    d: "Progressive validation with warnings"
+  implications:
+    a: "Immediate feedback but potentially disruptive"
+    d: "Helpful guidance without blocking"
+  your_answer: "a"
+
+q10_mobile_responsiveness:
+  question: "What level of mobile support is needed for the shipment workflow?"
+  context: "Mobile support affects accessibility and usage scenarios"
+  options:
+    a: "Desktop only - no mobile optimization"
+    b: "Mobile-responsive but desktop-optimized"
+    c: "Mobile-first design with desktop enhancement"
+    d: "Native mobile app integration"
+  implications:
+    b: "Good cross-device compatibility"
+    c: "Mobile-optimized experience"
+  your_answer: "b"
+
+### **3. TECHNICAL (Architecture & Performance):**
+
+q11_real_time_quote_integration:
+  question: "How should real-time carrier quotes be implemented?"
+  context: "Quote integration affects performance and reliability"
+  options:
+    a: "Direct API calls with loading indicators"
+    b: "Asynchronous quotes with progress updates"
+    c: "Cached quotes with real-time refresh"
+    d: "Queue-based quote processing"
+  implications:
+    a: "Simple but potentially slow"
+    b: "Better user experience"
+    d: "Scalable but complex"
+  your_answer: "b"
+
+q12_session_storage_strategy:
+  question: "How should workflow session data be stored?"
+  context: "Storage strategy affects performance and reliability"
+  options:
+    a: "Browser localStorage only"
+    b: "Server-side sessions with database"
+    c: "Hybrid storage (critical data server-side)"
+    d: "Redis cache with fallback to database"
+  implications:
+    b: "Reliable but server-dependent"
+    c: "Balanced approach"
+  your_answer: "b"
+
+q13_package_validation_complexity:
+  question: "How complex should package validation be?"
+  context: "Validation complexity affects user experience and carrier compliance"
+  options:
+    a: "Basic validation (positive numbers, required fields)"
+    b: "Carrier-specific validation rules"
+    c: "Real-time carrier validation API calls"
+    d: "Smart validation with suggestions"
+  implications:
+    b: "Good compliance"
+    d: "User-friendly compliance"
+  your_answer: "a"
+
+q14_label_generation_strategy:
+  question: "How should shipping labels be generated and stored?"
+  context: "Label generation affects printing workflow and storage requirements"
+  options:
+    a: "Generate on-demand from carrier APIs"
+    b: "Generate and cache labels locally"
+    c: "Generate and store with cloud backup"
+    d: "Batch label generation for efficiency"
+  implications:
+    a: "No storage but dependent on carrier APIs"
+    c: "Reliable with backup"
+  your_answer: "a"
+
+q15_shipment_tracking_updates:
+  question: "How should shipment tracking status be updated?"
+  context: "Tracking updates affect customer service and business operations"
+  options:
+    a: "Manual updates only"
+    b: "Scheduled API polling from carriers"
+    c: "Webhook notifications from carriers"
+    d: "Hybrid approach with fallback polling"
+  implications:
+    b: "Regular updates but API-intensive"
+    d: "Reliable with efficient updates"
+  your_answer: "a"
+
+### **4. VALIDATION (Data Integrity & Business Rules):**
+
+q16_customer_relationship_validation:
+  question: "How should the Customer → Sender → Receiver relationship be validated?"
+  context: "Relationship validation affects data integrity and business logic"
+  options:
+    a: "Basic existence validation only"
+    b: "Relationship consistency checking"
+    c: "Address validation and geocoding"
+    d: "Comprehensive business rule validation"
+  implications:
+    b: "Good data integrity"
+    d: "Complete business compliance"
+  your_answer: "a"
+
+q17_package_limits_enforcement:
+  question: "How should package size and weight limits be enforced?"
+  context: "Limit enforcement affects carrier compliance and user experience"
+  options:
+    a: "Soft limits with warnings"
+    b: "Hard limits with error prevention"
+    c: "Carrier-specific dynamic limits"
+    d: "Smart limits with alternative suggestions"
+  implications:
+    b: "Strict compliance"
+    d: "User-friendly compliance"
+  your_answer: "a"
+
+q18_quote_validity_checking:
+  question: "How should quote validity and expiration be handled?"
+  context: "Quote validity affects pricing accuracy and business operations"
+  options:
+    a: "No expiration - quotes valid indefinitely"
+    b: "Fixed expiration time (e.g., 30 minutes)"
+    c: "Carrier-specific expiration rules"
+    d: "Dynamic expiration based on market conditions"
+  implications:
+    b: "Simple and predictable"
+    c: "Accurate to carrier policies"
+  your_answer: "a"
+
+### **5. INTEGRATION (Module Connections):**
+
+q19_customer_module_integration:
+  question: "How should shipment creation integrate with Customer module?"
+  context: "Integration affects workflow efficiency and data consistency"
+  options:
+    a: "Simple data lookup and selection"
+    b: "Real-time customer data synchronization"
+    c: "Customer creation within shipment workflow"
+    d: "Smart customer suggestions based on history"
+  implications:
+    c: "Streamlined workflow"
+    d: "Enhanced user experience"
+  your_answer: "c and d"
+
+q20_shipper_module_integration:
+  question: "How should shipment creation integrate with Shipper module for quotes?"
+  context: "Integration affects quote accuracy and performance"
+  options:
+    a: "Direct API calls to Shipper module"
+    b: "Event-driven quote requests"
+    c: "Cached quote service with refresh"
+    d: "Microservice architecture with queue"
+  implications:
+    a: "Simple and direct"
+    c: "Good performance with accuracy"
+  your_answer: "a"
+
+## 📝 **ADDITIONAL CONSIDERATIONS:**
+
+### **Workflow Optimization:**
+- Should there be quick shipment templates for common scenarios?
+- Bulk shipment creation capabilities needed?
+- Integration with barcode scanning for package details?
+
+### **Performance Considerations:**
+- Expected number of concurrent shipment creations?
+- Peak usage times and load balancing requirements?
+- Real-time quote response time requirements?
+
+### **Business Intelligence:**
+- Shipment analytics and reporting requirements?
+- Performance metrics tracking for workflow optimization?
+- Customer behavior analysis for workflow improvements?
+
+### **Compliance and Security:**
+- Data protection requirements for shipment information?
+- Audit trail requirements for shipment modifications?
+- Regulatory compliance for international shipments?
+
+---
+
+**NEXT STEP:** Generate detailed Shipment Module specification based on completed answers.
+
+**CURRENT SEQUENCE:** User ✅ → Branch ✅ → Customer ✅ → Product ⏳ → Shipment ✅ → Shipper → Audit
+
+**STATUS:** ✅ SHIPMENT MODULE ANSWERS COMPLETE - GENERATING SPECIFICATION 

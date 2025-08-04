@@ -1,0 +1,229 @@
+# =================================================================
+# SHIPPER MODULE REQUIREMENTS - FROM MODULE BREAKDOWN
+# =================================================================
+# Generated from 07-module-breakdown-planning.yaml using improved template
+# STATUS: COMPLETE DATA TRANSFER FROM BREAKDOWN
+# =================================================================
+
+# BASIC MODULE INFO (from module breakdown)
+module_folder: "Shipper"
+output_organization: true
+application_name: "ShipCentral"
+module_type: "CREATE NEW"
+
+# APPLICATION CONTEXT (transfer from breakdown)
+application_context:
+  application_name: "ShipCentral"
+  business_domain: "Multi-branch shipping and logistics management"
+  module_role: "Handle all shipping carrier integrations with real-time quotes, label generation, and tracking"
+  integration_with: ["User", "Branch", "Shipment", "Quote", "Audit"]
+  technology_stack:
+    framework: "Laravel 8.12"
+    frontend: "Blade + jQuery"
+    database: "MariaDB with API caching"
+    ui: "Bootstrap 5"
+    apis: "RESTful API calls with fallback caching"
+    architecture: "Modular (nwidart/laravel-modules)"
+
+# TRANSFER COMPLETE MODULE BREAKDOWN DATA
+module_breakdown_transfer:
+  # COPIED EXACTLY from 07-module-breakdown-planning.yaml
+  core_features: |
+    - Thailand Post API integration
+    - J&T Express API integration
+    - Flash Express API integration
+    - Real-time quote generation
+    - Label generation and printing
+    - Shipment tracking integration
+    - API failure handling with cached quotes
+  
+  controllers_needed: |
+    - ShipperAdminController: Company admin manages API credentials
+    - ShipperApiController: Handle API calls and responses
+    - RateController: Manage shipping rates and comparisons
+    
+  models_needed: |
+    - Shipper: Shipping carrier information
+    - ShipperApi: API credentials and configuration
+    - ShippingRate: Rate cache and history
+    - ApiLog: API call logging and monitoring
+    
+  business_purpose: |
+    Handle all shipping carrier integrations with real-time quotes, label generation, and tracking
+    
+  api_integrations: |
+    thailand_post:
+      features: ["quotes", "labels", "tracking"]
+      priority: "High"
+    jt_express:
+      features: ["quotes", "labels", "tracking"]
+      priority: "High"
+    flash_express:
+      features: ["quotes", "labels", "tracking"]
+      priority: "High"
+
+# USER REQUIREMENT (enhanced with breakdown data)
+user_requirement: |
+  Create comprehensive Shipper module for ShipCentral's carrier API integrations based on module breakdown specifications.
+  
+  **Business Context:** 
+  Handle all shipping carrier integrations with real-time quotes, label generation, and tracking for multi-branch shipping business.
+  
+  **Core Features:**
+  - Thailand Post API integration
+  - J&T Express API integration
+  - Flash Express API integration
+  - Real-time quote generation
+  - Label generation and printing
+  - Shipment tracking integration
+  - API failure handling with cached quotes
+  
+  **Controllers Required:**
+  - ShipperAdminController: Company admin manages API credentials
+  - ShipperApiController: Handle API calls and responses
+  - RateController: Manage shipping rates and comparisons
+  
+  **Models Required:**
+  - Shipper: Shipping carrier information
+  - ShipperApi: API credentials and configuration
+  - ShippingRate: Rate cache and history
+  - ApiLog: API call logging and monitoring
+  
+  **API Integrations:**
+  - Thailand Post API (quotes, labels, tracking)
+  - J&T Express API (quotes, labels, tracking)
+  - Flash Express API (quotes, labels, tracking)
+  
+  **Integration Requirements:**
+  - Depends on: User, Branch
+  - Affects: Shipment, Quote
+
+# TECHNICAL PREFERENCES (from Step 6)
+technical_preferences:
+  framework: "Laravel 8.12"
+  frontend: "Blade + jQuery"
+  database: "MariaDB with API caching"
+  architecture: "Repository pattern"
+
+# CONTROLLER PATTERN (from breakdown)
+controller_pattern: "ShipperAdminController"
+
+# DEVELOPMENT INFO (from breakdown)
+development_info:
+  priority: "HIGH - Phase 3"
+  development_estimate: "3-4 weeks"
+  dependencies: ["User", "Branch"]
+  affects: ["Shipment", "Quote"]
+  phase: "Integration Modules (Phase 3 - External Services)"
+
+# =================================================================
+# DETAILED CONTROLLER SPECIFICATIONS
+# =================================================================
+# Based on module breakdown, these controllers MUST be generated:
+
+controller_specifications:
+  ShipperAdminController:
+    purpose: "Company admin manages API credentials and carrier configurations"
+    access_level: "Company Admin only"
+    methods_required:
+      - "index(): List all shipping carriers with status"
+      - "create(): Add new shipping carrier"
+      - "store(): Save new carrier configuration"
+      - "show(): View carrier details and API logs"
+      - "edit(): Edit carrier API credentials"
+      - "update(): Update carrier configuration"
+      - "destroy(): Remove carrier"
+      - "testConnection(): Test API connectivity"
+      - "viewLogs(): View API call logs and errors"
+      
+  ShipperApiController:
+    purpose: "Handle API calls and responses for internal module integration"
+    access_level: "Internal API for other modules"
+    methods_required:
+      - "getQuotes(): Get quotes from all carriers"
+      - "createShipment(): Create shipment with selected carrier"
+      - "generateLabel(): Generate shipping label"
+      - "trackShipment(): Get tracking information"
+      - "schedulePickup(): Schedule pickup with carrier"
+      - "handleWebhook(): Process carrier webhooks"
+      
+  RateController:
+    purpose: "Manage shipping rates and comparisons with branch markup"
+    access_level: "Internal API for Shipment module"
+    methods_required:
+      - "compareRates(): Compare rates from all carriers"
+      - "applyMarkup(): Apply branch markup rules"
+      - "getCachedRates(): Get cached rates when API fails"
+      - "refreshRates(): Refresh rate cache"
+      - "calculateFinalPrice(): Calculate final price with markup"
+
+# =================================================================
+# DETAILED MODEL SPECIFICATIONS
+# =================================================================
+# Based on module breakdown, these models MUST be generated:
+
+model_specifications:
+  Shipper:
+    purpose: "Shipping carrier information and configuration"
+    relationships:
+      - "hasMany ShipperApi"
+      - "hasMany ShippingRate"
+      - "hasMany ApiLog"
+      
+  ShipperApi:
+    purpose: "API credentials and configuration per carrier"
+    relationships:
+      - "belongsTo Shipper"
+      - "belongsTo Branch (nullable for global settings)"
+      
+  ShippingRate:
+    purpose: "Rate cache and history for performance"
+    relationships:
+      - "belongsTo Shipper"
+      - "belongsTo Shipment"
+      
+  ApiLog:
+    purpose: "API call logging and monitoring for troubleshooting"
+    relationships:
+      - "belongsTo Shipper"
+      - "belongsTo User (who made the call)"
+
+# =================================================================
+# API INTEGRATION SPECIFICATIONS
+# =================================================================
+# Based on module breakdown, these integrations MUST be implemented:
+
+api_integration_specifications:
+  thailand_post:
+    endpoints:
+      - "quotes: POST /api/rate-calculation"
+      - "labels: POST /api/create-shipment"
+      - "tracking: GET /api/track-shipment"
+    authentication: "API Key + Secret"
+    
+  jt_express:
+    endpoints:
+      - "quotes: POST /api/order/price"
+      - "labels: POST /api/order/add"
+      - "tracking: POST /api/order/track"
+    authentication: "API Key + Signature"
+    
+  flash_express:
+    endpoints:
+      - "quotes: POST /open-api/orders/price"
+      - "labels: POST /open-api/orders"
+      - "tracking: GET /open-api/orders/track"
+    authentication: "Bearer Token"
+
+# =================================================================
+# CRITICAL: AI INSTRUCTIONS FOR COMPLETE GENERATION
+# =================================================================
+# When AI processes this file, it MUST:
+# 1. Generate ALL 3 controllers with ALL specified methods
+# 2. Generate ALL 4 models with proper relationships
+# 3. Implement ALL 3 API integrations
+# 4. Follow exact naming from controller_specifications
+# 5. Never default to basic CRUD - use specialized controllers
+# 6. Include complete API failure handling with caching
+# 7. Implement branch markup application logic
+# ================================================================= 

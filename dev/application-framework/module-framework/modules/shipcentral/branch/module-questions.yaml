@@ -1,0 +1,322 @@
+# MODULE QUESTIONS - BRANCH MODULE
+# APPLICATION: SHIPCENTRAL SHIPPING MANAGEMENT
+# STAGE 3: CLARIFYING QUESTIONS FOR MODULE DEVELOPMENT
+# STATUS: AWAITING USER ANSWERS - UPDATED TO COVER ALL BREAKDOWN REQUIREMENTS
+
+## 📋 **ANALYSIS SUMMARY:**
+
+analysis_summary:
+  detected_patterns:
+    - "Multi-branch operations with isolated data"
+    - "Rate markup management per branch per shipper"
+    - "AdminController pattern with branch-specific controllers"
+    - "Performance tracking and analytics"
+    - "Branch isolation enforcement system"
+  
+  estimated_complexity: "Medium-High"
+  estimated_time: "2-3 weeks development"
+  reference_module: "User module (for integration patterns)"
+  
+  key_features_needed:
+    - "3 specialized controllers: BranchAdminController, BranchSettingsController, BranchReportController"
+    - "Branch registration and configuration"
+    - "Rate markup management per shipper"
+    - "Branch performance tracking and analytics"
+    - "Complete branch isolation enforcement"
+
+## ❓ **CLARIFYING QUESTIONS:**
+
+### **1. BUSINESS LOGIC (Branch Operations & Markup Management):**
+
+q1_branch_markup_strategy:
+  question: "How should rate markup be managed for each branch?"
+  context: "Markup strategy affects pricing flexibility and revenue management"
+  options:
+    a: "Fixed percentage markup per carrier per branch"
+    b: "Tiered markup based on shipment volume"
+    c: "Dynamic markup with override capabilities"
+    d: "All of the above with business rules"
+  implications:
+    a: "Simple implementation and management"
+    d: "Maximum flexibility for different business models"
+  your_answer: "a"
+
+q2_branch_isolation_level:
+  question: "How strict should branch data isolation be?"
+  context: "Isolation level affects security and cross-branch collaboration"
+  options:
+    a: "Complete isolation - no cross-branch data access"
+    b: "Controlled sharing for specific business needs"
+    c: "Read-only access for Company Admin across branches"
+    d: "Hierarchical access with business rules"
+  implications:
+    a: "Maximum security but limited flexibility"
+    c: "Good balance of security and oversight"
+  your_answer: "a"
+
+q3_branch_status_management:
+  question: "How should branch activation/deactivation work?"
+  context: "Status management affects operations and user access"
+  options:
+    a: "Simple active/inactive status"
+    b: "Status with effective dates"
+    c: "Gradual deactivation with migration period"
+    d: "Complex status workflow with approvals"
+  implications:
+    a: "Simple and immediate"
+    c: "Business-friendly transition"
+  your_answer: "a"
+
+q4_markup_calculation_timing:
+  question: "When should markup calculations be applied?"
+  context: "Timing affects pricing accuracy and performance"
+  options:
+    a: "Real-time calculation at quote time"
+    b: "Pre-calculated and cached"
+    c: "Calculated at shipment creation"
+    d: "Multiple calculation points with validation"
+  implications:
+    a: "Most accurate but potential performance impact"
+    d: "Maximum accuracy with redundancy"
+  your_answer: "a"
+
+q5_branch_performance_metrics:
+  question: "What performance metrics should be tracked per branch?"
+  context: "Metrics affect reporting and business insights"
+  options:
+    a: "Basic shipment count and revenue"
+    b: "Detailed carrier usage and markup performance"
+    c: "Customer satisfaction and delivery performance"
+    d: "Comprehensive analytics with all metrics"
+  implications:
+    a: "Simple tracking and reporting"
+    d: "Complete business intelligence"
+  your_answer: "a"
+
+### **2. UI/UX (Branch Management Interface):**
+
+q6_branch_admin_dashboard:
+  question: "What should the branch admin dashboard display?"
+  context: "Dashboard design affects daily operations efficiency"
+  options:
+    a: "Basic branch info and quick stats"
+    b: "Recent shipments and carrier performance"
+    c: "Markup settings and financial overview"
+    d: "Comprehensive dashboard with all information"
+  implications:
+    b: "Operational focus"
+    d: "Complete overview"
+  your_answer: "a"
+
+q7_markup_management_interface:
+  question: "How should markup rules be managed in the UI?"
+  context: "Interface design affects ease of rate management"
+  options:
+    a: "Simple form with percentage inputs per carrier"
+    b: "Grid interface with bulk editing capabilities"
+    c: "Advanced rules builder with conditions"
+    d: "Multiple interfaces for different complexity levels"
+  implications:
+    b: "Efficient for multiple carriers"
+    d: "Flexible for different user needs"
+  your_answer: "b"
+
+q8_branch_listing_organization:
+  question: "How should branches be organized in the company admin view?"
+  context: "Organization affects management efficiency"
+  options:
+    a: "Simple list with basic details"
+    b: "Grouped by region or status"
+    c: "Grid view with performance indicators"
+    d: "Multiple view options with filtering"
+  implications:
+    d: "Maximum flexibility for different management styles"
+  your_answer: "d"
+
+q9_branch_settings_access:
+  question: "What settings should branch admins be able to modify?"
+  context: "Access level affects autonomy vs. control balance"
+  options:
+    a: "Basic branch info (name, address, contact)"
+    b: "Basic info + markup rates"
+    c: "All settings except critical business rules"
+    d: "Configurable permissions per branch"
+  implications:
+    b: "Good balance of autonomy and control"
+  your_answer: "b"
+
+q10_branch_reporting_interface:
+  question: "How should branch performance reports be presented?"
+  context: "Report presentation affects business insights and decision making"
+  options:
+    a: "Simple tables with basic metrics"
+    b: "Interactive charts with drill-down capabilities"
+    c: "Dashboard widgets with real-time updates"
+    d: "Comprehensive reporting with multiple visualization options"
+  implications:
+    a: "Simple but functional"
+    b: "Good analysis capabilities"
+  your_answer: "a"
+
+### **3. TECHNICAL (Controller Architecture & Data Management):**
+
+q11_controller_separation:
+  question: "Confirm the 3-controller architecture from breakdown requirements?"
+  context: "Critical for proper separation of concerns and access control"
+  options:
+    a: "BranchAdminController - Company admin manages all branches"
+    b: "BranchSettingsController - Branch admin manages own settings"
+    c: "BranchReportController - Performance and analytics"
+    d: "All of the above with strict access control"
+  implications:
+    d: "Proper separation with role-based access"
+  your_answer: "a"
+
+q12_markup_data_structure:
+  question: "How should markup data be structured in the database?"
+  context: "Data structure affects query performance and flexibility"
+  options:
+    a: "Simple branch_markups table with branch_id, carrier_id, markup"
+    b: "Versioned markup with effective dates"
+    c: "JSON field for complex markup rules"
+    d: "Normalized structure with markup history"
+  implications:
+    a: "Simple and performant"
+    b: "Good for historical tracking"
+  your_answer: "a"
+
+q13_branch_isolation_middleware:
+  question: "How should branch isolation be enforced technically?"
+  context: "Technical implementation affects security and performance"
+  options:
+    a: "Middleware that filters queries by branch_id"
+    b: "Model scopes for automatic branch filtering"
+    c: "Repository pattern with branch-aware methods"
+    d: "Comprehensive isolation with multiple layers"
+  implications:
+    b: "Automatic and consistent"
+    d: "Maximum security with redundancy"
+  your_answer: "b"
+
+q14_performance_optimization:
+  question: "What optimizations are needed for branch operations?"
+  context: "Performance affects user experience and system scalability"
+  options:
+    a: "Basic database indexes on branch_id"
+    b: "Caching for markup calculations"
+    c: "Optimized queries for reports"
+    d: "Comprehensive optimization strategy"
+  implications:
+    a: "Simple and effective"
+    d: "Maximum performance"
+  your_answer: "a"
+
+q15_cross_branch_data_sharing:
+  question: "How should shared data (like customers) work across branches?"
+  context: "Data sharing affects business operations and complexity"
+  options:
+    a: "No sharing - each branch maintains own customers"
+    b: "Shared customer database with branch-specific preferences"
+    c: "Configurable sharing rules per data type"
+    d: "Advanced sharing with permission matrix"
+  implications:
+    b: "Good balance of sharing and isolation"
+    c: "Maximum flexibility"
+  your_answer: "b"
+
+### **4. VALIDATION (Business Rules & Data Integrity):**
+
+q16_markup_validation_rules:
+  question: "What validation rules should apply to markup settings?"
+  context: "Validation affects business profitability and data quality"
+  options:
+    a: "Minimum and maximum markup percentage limits"
+    b: "Business rules validation with profit margins"
+    c: "Approval workflow for markup changes"
+    d: "All of the above with audit trail"
+  implications:
+    a: "Simple range validation"
+    d: "Comprehensive business protection"
+  your_answer: "a"
+
+q17_branch_registration_validation:
+  question: "What validation is needed for new branch registration?"
+  context: "Registration validation affects data quality and business operations"
+  options:
+    a: "Required fields and format validation"
+    b: "Unique branch codes and identifiers"
+    c: "Address validation and geographic constraints"
+    d: "Comprehensive validation with business rules"
+  implications:
+    a: "Basic data quality"
+    c: "Business-relevant validation"
+  your_answer: "a"
+
+q18_access_control_validation:
+  question: "How should branch access permissions be validated?"
+  context: "Access validation affects security and proper operations"
+  options:
+    a: "Simple role-based access checking"
+    b: "Branch ownership validation for settings"
+    c: "Time-based access controls"
+    d: "Multi-layer access validation"
+  implications:
+    a: "Simple and reliable"
+    b: "Business-appropriate security"
+  your_answer: "a"
+
+### **5. INTEGRATION (Cross-Module Dependencies):**
+
+q19_user_module_integration:
+  question: "How should Branch module integrate with User module?"
+  context: "Integration affects user management and branch assignment"
+  options:
+    a: "Foreign key relationship with automatic filtering"
+    b: "Service-based integration with shared context"
+    c: "Event-driven integration for branch changes"
+    d: "Comprehensive integration with all approaches"
+  implications:
+    b: "Clean service-oriented design"
+    a: "Simple and direct"
+  your_answer: "b"
+
+q20_shipper_module_integration:
+  question: "How should markup system integrate with Shipper module?"
+  context: "Integration affects real-time pricing and quote accuracy"
+  options:
+    a: "Direct database lookup during quote generation"
+    b: "Service layer for markup calculation"
+    c: "Cached markup values with invalidation"
+    d: "Event-driven markup updates"
+  implications:
+    b: "Clean separation of concerns"
+    c: "Performance optimized"
+  your_answer: "b"
+
+## 📝 **ADDITIONAL CONSIDERATIONS FOR BRANCH MODULE:**
+
+### **Business Rules:**
+- Geographic coverage areas per branch?
+- Service level restrictions by branch?
+- Holiday and operating hours per branch?
+
+### **Performance Considerations:**
+- Branch-filtered query optimization?
+- Markup calculation caching strategy?
+- Report generation performance for large datasets?
+
+### **Security Requirements:**
+- Branch data encryption requirements?
+- Audit logging for markup changes?
+- Access logging for cross-branch operations?
+
+### **Integration Requirements:**
+- Real-time synchronization with shipping carriers?
+- Integration with accounting systems for markup tracking?
+- API endpoints for branch management?
+
+---
+
+**STATUS:** ✅ BRANCH MODULE QUESTIONS UPDATED - ALL BREAKDOWN REQUIREMENTS COVERED
+
+**NEXT STEP:** Review answers and proceed to next module or specification generation 

@@ -1,0 +1,328 @@
+# MODULE QUESTIONS - CUSTOMER MODULE
+# APPLICATION: SHIPCENTRAL SHIPPING MANAGEMENT
+# STAGE 3: CLARIFYING QUESTIONS FOR MODULE DEVELOPMENT
+# STATUS: AWAITING USER ANSWERS - UPDATED TO COVER ALL BREAKDOWN REQUIREMENTS
+
+## 📋 **ANALYSIS SUMMARY:**
+
+analysis_summary:
+  detected_patterns:
+    - "Three-person model: Customer → Sender → Receiver"
+    - "Centralized database shared across branches"
+    - "Multiple addresses per sender capability"
+    - "Cross-branch customer data sharing"
+  
+  estimated_complexity: "Medium-High"
+  estimated_time: "2-3 weeks development"
+  reference_module: "User and Branch modules (dependencies)"
+  
+  key_business_features:
+    - "4 specialized controllers: CustomerAdminController, CustomerController, SenderController, ReceiverController"
+    - "Centralized customer database with cross-branch sharing"
+    - "Three-tier relationship management: Customer → Sender → Receiver"
+    - "Multiple addresses per sender with address management"
+    - "Advanced customer search and autocomplete system"
+
+## ❓ **CLARIFYING QUESTIONS:**
+
+### **1. BUSINESS LOGIC (Customer Relationship Management):**
+
+q1_customer_uniqueness:
+  question: "How should customer uniqueness be enforced across branches?"
+  context: "Customer uniqueness affects data integrity and cross-branch sharing"
+  options:
+    a: "Unique by email address globally"
+    b: "Unique by phone number globally"
+    c: "Unique by customer code (auto-generated)"
+    d: "Multiple uniqueness options with validation"
+  implications:
+    c: "Simple and guaranteed unique"
+    d: "Flexible but more complex validation"
+  your_answer: "c by use uuid"
+
+q2_sender_address_limit:
+  question: "Should there be limits on addresses per sender?"
+  context: "Address limits affect data management and performance"
+  options:
+    a: "No limit - unlimited addresses per sender"
+    b: "Reasonable limit (e.g., 10 addresses per sender)"
+    c: "Configurable limit per customer type"
+    d: "Soft limit with warnings"
+  implications:
+    a: "Maximum flexibility"
+    b: "Balanced approach"
+    d: "Flexible with guidance"
+  your_answer: "a"
+
+q3_customer_branch_association:
+  question: "How should customer-branch relationships work?"
+  context: "Customer association affects data access and business rules"
+  options:
+    a: "Customers belong to all branches (fully shared)"
+    b: "Customers can be assigned to specific branches"
+    c: "First branch to create customer 'owns' it"
+    d: "Configurable sharing rules per customer"
+  implications:
+    a: "Complete sharing and flexibility"
+    b: "Controlled sharing"
+    d: "Complex but customizable"
+  your_answer: "a"
+
+q4_duplicate_customer_handling:
+  question: "How should potential duplicate customers be detected and handled?"
+  context: "Duplicate prevention affects data quality and user experience"
+  options:
+    a: "No duplicate detection - allow potential duplicates"
+    b: "Fuzzy matching on name and phone/email"
+    c: "Strict matching with manual merge tools"
+    d: "AI-powered duplicate detection with suggestions"
+  implications:
+    b: "Good balance of automation and accuracy"
+    c: "Accurate but requires manual intervention"
+  your_answer: "b"
+
+q5_customer_history_scope:
+  question: "What customer history should be tracked and displayed?"
+  context: "History tracking affects storage requirements and business insights"
+  options:
+    a: "Basic shipment history only"
+    b: "Shipment history with performance metrics"
+    c: "Complete interaction history across all branches"
+    d: "Configurable history tracking levels"
+  implications:
+    b: "Good for business analysis"
+    c: "Comprehensive but storage-intensive"
+  your_answer: "a"
+
+### **2. UI/UX (Customer Management Interface):**
+
+q6_customer_search_interface:
+  question: "How should customer search functionality work?"
+  context: "Search interface affects daily workflow efficiency"
+  options:
+    a: "Simple search box with basic filters"
+    b: "Advanced search with multiple criteria"
+    c: "Real-time autocomplete with smart suggestions"
+    d: "Multiple search modes (simple/advanced/barcode)"
+  implications:
+    c: "Fast and user-friendly"
+    d: "Comprehensive but more complex"
+  your_answer: "a"
+
+q7_three_person_selection_ui:
+  question: "How should the Customer → Sender → Receiver selection work in shipment creation?"
+  context: "Selection workflow affects shipment creation efficiency"
+  options:
+    a: "Sequential selection: Customer first, then Sender, then Receiver"
+    b: "Single form with cascading dropdowns"
+    c: "Tab-based selection with autocomplete"
+    d: "Modal-based selection with search"
+  implications:
+    a: "Clear workflow but slower"
+    c: "Flexible and intuitive"
+  your_answer: "b by dropdown using select with auto complete"
+
+q8_address_management_ui:
+  question: "How should multiple addresses per sender be managed?"
+  context: "Address management affects user experience and data accuracy"
+  options:
+    a: "Simple list with add/edit/delete actions"
+    b: "Address book style with favorites"
+    c: "Map integration with address validation"
+    d: "Smart address suggestions with history"
+  implications:
+    b: "User-friendly with quick access"
+    c: "Advanced with location validation"
+  your_answer: "b"
+
+q9_customer_profile_layout:
+  question: "How should customer profile pages be organized?"
+  context: "Profile organization affects information accessibility"
+  options:
+    a: "Single page with all information"
+    b: "Tabbed interface (Info/Senders/Receivers/History)"
+    c: "Collapsible sections with overview"
+    d: "Dashboard-style with widgets"
+  implications:
+    b: "Organized and structured"
+    c: "Compact with drill-down"
+  your_answer: "b"
+
+q10_quick_add_functionality:
+  question: "Should there be 'quick add' options during shipment creation?"
+  context: "Quick add affects workflow speed vs. data completeness"
+  options:
+    a: "No quick add - always use full forms"
+    b: "Quick add with minimal required fields"
+    c: "Quick add with auto-completion later"
+    d: "Context-aware quick add based on user role"
+  implications:
+    b: "Balanced speed and data quality"
+    c: "Fast workflow with data cleanup"
+  your_answer: "b"
+
+### **3. TECHNICAL (Architecture & Performance):**
+
+q11_search_performance_optimization:
+  question: "How should customer search be optimized for performance?"
+  context: "Search optimization affects user experience and system load"
+  options:
+    a: "Basic database indexes on search fields"
+    b: "Full-text search with MariaDB"
+    c: "Search index with caching"
+    d: "Elasticsearch integration for advanced search"
+  implications:
+    a: "Simple and adequate for small datasets"
+    c: "Good balance of performance and complexity"
+  your_answer: "a"
+
+q12_autocomplete_implementation:
+  question: "How should autocomplete functionality be implemented?"
+  context: "Autocomplete implementation affects responsiveness and accuracy"
+  options:
+    a: "Simple AJAX calls with basic filtering"
+    b: "Debounced search with caching"
+    c: "Client-side search with preloaded data"
+    d: "Smart autocomplete with learning"
+  implications:
+    b: "Good performance with reasonable complexity"
+    c: "Fast but limited by data size"
+  your_answer: "a by using select2 with auto complete"
+
+q13_address_storage_strategy:
+  question: "How should multiple addresses be stored and accessed?"
+  context: "Address storage affects query performance and flexibility"
+  options:
+    a: "Separate addresses table with foreign keys"
+    b: "JSON field in senders table"
+    c: "Hybrid approach with primary address in sender table"
+    d: "Normalized address structure with components"
+  implications:
+    a: "Queryable and normalized"
+    c: "Balanced performance and structure"
+  your_answer: "a"
+
+q14_customer_code_generation:
+  question: "How should customer codes be generated?"
+  context: "Code generation affects uniqueness and business integration"
+  options:
+    a: "Auto-incrementing numbers (CUS-001, CUS-002)"
+    b: "Branch-based codes (BKK-001, CNX-001)"
+    c: "Date-based codes (240101-001)"
+    d: "Configurable pattern with validation"
+  implications:
+    a: "Simple and guaranteed unique"
+    d: "Flexible but requires configuration"
+  your_answer: "b"
+
+q15_data_relationship_integrity:
+  question: "How should data relationships be maintained?"
+  context: "Relationship integrity affects data consistency and business rules"
+  options:
+    a: "Foreign key constraints with cascade deletes"
+    b: "Soft deletes to maintain history"
+    c: "Orphan cleanup with background jobs"
+    d: "Flexible relationships with audit trails"
+  implications:
+    b: "Maintains history for audit"
+    d: "Comprehensive but complex"
+  your_answer: "a"
+
+### **4. VALIDATION (Data Integrity & Business Rules):**
+
+q16_customer_data_validation:
+  question: "What validation rules should apply to customer data?"
+  context: "Validation affects data quality and user experience"
+  options:
+    a: "Basic required fields validation"
+    b: "Format validation (email, phone) with regional support"
+    c: "Business rules validation (tax ID format)"
+    d: "Comprehensive validation with custom rules"
+  implications:
+    b: "Good data quality with international support"
+    d: "Maximum data quality with complexity"
+  your_answer: "b"
+
+q17_address_validation_level:
+  question: "How thorough should address validation be?"
+  context: "Address validation affects delivery accuracy and user experience"
+  options:
+    a: "No validation - free text entry"
+    b: "Basic format validation"
+    c: "Postal code validation with database lookup"
+    d: "Full address validation with geocoding"
+  implications:
+    c: "Good accuracy with reasonable complexity"
+    d: "Maximum accuracy but requires external services"
+  your_answer: "c"
+
+q18_customer_status_management:
+  question: "How should customer status changes be managed?"
+  context: "Status management affects business operations and data access"
+  options:
+    a: "Simple active/inactive toggle"
+    b: "Status with reasons and audit trail"
+    c: "Workflow-based status changes"
+    d: "Automatic status based on activity"
+  implications:
+    b: "Good audit trail with reasons"
+    c: "Controlled changes with approval"
+  your_answer: "a"
+
+### **5. INTEGRATION (Module Connections):**
+
+q19_shipment_integration:
+  question: "How should Customer module integrate with Shipment creation?"
+  context: "Integration affects shipment workflow efficiency"
+  options:
+    a: "Simple data provision via repository"
+    b: "API endpoints for shipment workflow"
+    c: "Real-time data synchronization"
+    d: "Event-driven integration with queues"
+  implications:
+    a: "Simple and direct"
+    b: "Clean API boundaries"
+  your_answer: "a"
+
+q20_branch_data_filtering:
+  question: "How should branch-based data filtering work?"
+  context: "Data filtering affects user experience and performance"
+  options:
+    a: "No filtering - all customers visible to all branches"
+    b: "Soft filtering with branch preferences"
+    c: "Hard filtering based on customer-branch association"
+    d: "Configurable filtering rules per branch"
+  implications:
+    a: "Complete sharing and flexibility"
+    d: "Customizable but complex"
+  your_answer: "a"
+
+## 📝 **ADDITIONAL CONSIDERATIONS:**
+
+### **Data Migration:**
+- How to import existing customer data from other systems?
+- Data cleanup and deduplication strategies?
+- Customer data export capabilities for reporting?
+
+### **Performance Considerations:**
+- Expected number of customers in the system?
+- Frequency of customer searches and lookups?
+- Requirements for real-time customer updates?
+
+### **Privacy and Security:**
+- Customer data privacy requirements?
+- Data retention policies for inactive customers?
+- Access control for sensitive customer information?
+
+### **Integration Requirements:**
+- Integration with external CRM systems?
+- Customer communication preferences tracking?
+- Marketing and communication integration needs?
+
+---
+
+**NEXT STEP:** After all module questions are generated, please answer them all to proceed to development.
+
+**CURRENT SEQUENCE:** User ✅ → Branch ✅ → Customer ✅ → Product → Shipment → Shipper → Audit
+
+**STATUS:** ✅ CUSTOMER MODULE QUESTIONS COMPLETE 

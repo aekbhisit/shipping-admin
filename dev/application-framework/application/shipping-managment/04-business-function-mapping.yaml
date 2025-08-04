@@ -1,0 +1,976 @@
+# BUSINESS FUNCTION MAPPING - SHIPCENTRAL (STEP 5)
+# MAPPING UI STRUCTURE V8 TO BUSINESS LOGIC & TECHNICAL IMPLEMENTATION
+# STATUS: BASED ON FINALIZED V8 NAVIGATION STRUCTURE + USER MODIFICATIONS
+
+## 📋 **MAPPING OVERVIEW:**
+
+### **Input Source:** 
+- ✅ UI Structure V8 (Finalized with user modifications)
+- ✅ Clarification Questions Answers
+- ✅ Business Model Requirements
+- ✅ User Feedback Integration
+
+### **Output Specifications:**
+1. **Business Logic Mapping** - Each UI feature → Business function
+2. **Database Models** - Required entities and relationships  
+3. **API Integration** - Third-party shipper API specifications
+4. **Security Matrix** - Role-based permissions by feature
+5. **Technical Architecture** - Laravel modules and Vue components
+6. **Workflow Definitions** - Step-by-step user journeys
+
+### **Business Context Summary:**
+- **Three-Person Transaction Model:** Customer (pays) → Sender (ships) → Receiver (receives)
+- **Real-time API Integration:** FedEx, DHL, UPS quotes on every submission
+- **Centralized Data Model:** Customer/Sender/Receiver shared across branches
+- **Pricing Model:** Fixed amount + percentage markup per shipper + retail rates
+- **Add-on Products:** Cost calculation only (no inventory tracking)
+- **Compliance Requirements:** Full audit trail for pricing, users, shipments
+- **Label Generation:** Browser printing from shipper API image URLs
+- **Billing Process:** Monthly Excel export for manual invoice processing
+
+## 🏢 **COMPANY ADMIN BUSINESS FUNCTION MAPPING:**
+
+### **Dashboard Menu Functions:**
+
+#### **Company Overview Page (/admin/dashboard/overview)**
+```yaml
+business_functions:
+  performance_section:
+    business_logic: "Multi-branch KPI calculation and performance comparison"
+    data_sources: ["shipments", "revenue", "branch_performance", "api_response_times"]
+    calculations: 
+      - total_shipments_per_branch
+      - revenue_per_branch  
+      - profit_margin_by_shipper
+      - average_processing_time
+    database_models: ["Branch", "Shipment", "BranchRevenue", "ShipperRate"]
+    permissions: ["view_all_branches", "access_financial_data"]
+    technical_components:
+      - "Chart.js for performance charts"
+      - "Real-time dashboard API"
+      - "Cache layer for performance"
+      
+  branch_comparison_section:
+    business_logic: "Side-by-side branch performance analysis"
+    data_sources: ["branch_metrics", "shipment_volumes", "profitability"]
+    calculations:
+      - branch_ranking_by_performance
+      - comparative_profit_analysis
+      - efficiency_metrics
+    database_models: ["Branch", "BranchMetrics", "Shipment"]
+    permissions: ["compare_branches", "view_branch_performance"]
+    technical_components:
+      - "DataTable with comparison features"
+      - "Export functionality"
+      - "Filter and sort capabilities"
+      
+  financial_overview_section:
+    business_logic: "Company-wide financial analysis and reporting"
+    data_sources: ["revenue_data", "cost_analysis", "profit_margins"]
+    calculations:
+      - total_company_revenue
+      - cost_vs_revenue_analysis
+      - profit_by_shipper_type
+    database_models: ["Revenue", "Cost", "ShipperRate", "BranchProduct"]
+    permissions: ["view_financial_data", "access_profit_analysis"]
+    technical_components:
+      - "Financial charts and graphs"
+      - "Trend analysis"
+      - "Export to Excel functionality"
+```
+
+#### **System Health Page (/admin/dashboard/health)**
+```yaml
+business_functions:
+  api_status_section:
+    business_logic: "Monitor shipper API connectivity and performance"
+    data_sources: ["api_logs", "response_times", "error_rates"]
+    monitoring:
+      - fedex_api_status
+      - dhl_api_status  
+      - ups_api_status
+      - average_response_time
+    database_models: ["ShipperAPI", "APILog", "APIStatus"]
+    permissions: ["monitor_system_health", "view_api_status"]
+    technical_components:
+      - "Real-time API monitoring"
+      - "Alert system"
+      - "Status dashboard"
+      
+  system_alerts_section:
+    business_logic: "System-wide alert management and resolution tracking"
+    data_sources: ["system_alerts", "error_logs", "resolution_status"]
+    alert_types:
+      - api_connection_failures
+      - system_performance_issues
+      - security_alerts
+      - business_rule_violations
+    database_models: ["SystemAlert", "AlertLog", "AlertResolution"]
+    permissions: ["manage_system_alerts", "resolve_issues"]
+    technical_components:
+      - "Alert management system"
+      - "Notification system"
+      - "Resolution workflow"
+```
+
+### **Branches Menu Functions:**
+
+#### **Branch Management Page (/admin/branches/list)**
+```yaml
+business_functions:
+  branch_datatable_section:
+    business_logic: "Complete branch oversight and management"
+    data_sources: ["branches", "branch_status", "performance_metrics"]
+    datatable_features:
+      - branch_listing_with_status
+      - performance_indicators
+      - action_buttons_per_row
+    database_models: ["Branch", "BranchStatus", "BranchMetrics"]
+    permissions: ["view_all_branches", "manage_branches"]
+    actions:
+      edit_branch: 
+        route: "/admin/branches/edit/{id}"
+        permission: "edit_branch"
+      rate_configuration:
+        route: "/admin/branches/rate/{id}" 
+        permission: "manage_branch_rates"
+      product_management:
+        route: "/admin/branches/product/{id}"
+        permission: "manage_branch_products"
+    technical_components:
+      - "DataTable with server-side processing"
+      - "Action buttons with permissions"
+      - "Status indicators"
+```
+
+#### **Branch Rate Configuration (/admin/branches/rate/{id})**
+```yaml
+business_functions:
+  markup_configuration_section:
+    business_logic: "Configure shipper markup rates (fixed amount + percentage)"
+    data_sources: ["shipper_base_rates", "branch_markup_rules"]
+    rate_calculations:
+      - percentage_markup_per_shipper
+      - fixed_amount_markup_per_shipper
+      - combined_markup_calculation
+    database_models: ["BranchShipperRate", "Shipper", "ShipperBaseRate"]
+    permissions: ["configure_branch_rates", "edit_markup_rules"]
+    form_fields:
+      - shipper_selection
+      - percentage_markup_input
+      - fixed_amount_input
+      - effective_date_range
+    technical_components:
+      - "Dynamic rate calculation"
+      - "Preview functionality"
+      - "Audit trail for rate changes"
+      
+  retail_rate_section:
+    business_logic: "Set customer-facing retail rates per shipper"
+    data_sources: ["retail_rate_rules", "customer_pricing"]
+    rate_types:
+      - standard_retail_rates
+      - customer_specific_rates
+      - promotional_rates
+    database_models: ["RetailRate", "CustomerRate", "Shipper"]
+    permissions: ["set_retail_rates", "manage_customer_pricing"]
+    technical_components:
+      - "Rate management interface"
+      - "Customer rate override system"
+      - "Rate history tracking"
+```
+
+### **Shippers Menu Functions:**
+
+#### **Shipper Management (/admin/shippers/list)**
+```yaml
+business_functions:
+  shipper_datatable_section:
+    business_logic: "Manage shipping provider integrations and configurations"
+    data_sources: ["shippers", "api_configurations", "connection_status"]
+    shipper_management:
+      - fedex_configuration
+      - dhl_configuration
+      - ups_configuration
+      - custom_shipper_support
+    database_models: ["Shipper", "ShipperAPI", "ShipperStatus"]
+    permissions: ["manage_shippers", "configure_api"]
+    actions:
+      edit_shipper:
+        route: "/admin/shippers/edit/{id}"
+        permission: "edit_shipper"
+      api_config:
+        route: "/admin/shippers/edit/{id}#api-configuration"
+        permission: "configure_shipper_api"
+      rate_config:
+        route: "/admin/shippers/rate/{id}"
+        permission: "configure_shipper_rates"
+      test_connection:
+        action: "test_api_connection"
+        permission: "test_shipper_api"
+```
+
+#### **Product Types Management (/admin/shippers/product-types)**
+```yaml
+business_functions:
+  product_type_datatable_section:
+    business_logic: "Simple product classification for shipping requirements"
+    data_sources: ["product_types", "shipping_requirements"]
+    product_categories:
+      - food_items
+      - clothing_textiles
+      - glass_fragile
+      - electronics
+      - documents
+      - other_general
+    database_models: ["ProductType", "ShippingRequirement"]
+    permissions: ["manage_product_types"]
+    technical_components:
+      - "Simple CRUD operations"
+      - "Category selection interface"
+      - "Basic validation rules"
+```
+
+### **Users Menu Functions:**
+
+#### **User Management (/admin/users/list)**
+```yaml
+business_functions:
+  user_datatable_section:
+    business_logic: "Multi-branch user management with role-based access"
+    data_sources: ["users", "user_roles", "branch_assignments", "activity_logs"]
+    user_management:
+      - multi_branch_user_listing
+      - role_assignment_tracking
+      - activity_monitoring
+      - permission_management
+    database_models: ["User", "Role", "UserRole", "UserActivity", "Branch"]
+    permissions: ["manage_users", "assign_roles", "view_user_activity"]
+    actions:
+      edit_user:
+        route: "/admin/users/edit/{id}"
+        permission: "edit_user"
+      manage_permissions:
+        route: "/admin/users/permissions/{id}"
+        permission: "manage_permissions"
+      view_activity:
+        route: "/admin/users/edit/{id}#activity-log"
+        permission: "view_user_activity"
+      reset_password:
+        action: "reset_user_password"
+        permission: "reset_passwords"
+    compliance_features:
+      - user_activity_audit_trail
+      - permission_change_logging
+      - login_tracking
+```
+
+### **Reports Menu Functions:**
+
+#### **Multi-Branch Reports (/admin/reports/branches)**
+```yaml
+business_functions:
+  performance_analytics_section:
+    business_logic: "Comprehensive branch performance analysis"
+    data_sources: ["branch_performance", "shipment_data", "revenue_metrics"]
+    analytics:
+      - branch_comparison_charts
+      - performance_trend_analysis
+      - efficiency_metrics
+    database_models: ["Branch", "Shipment", "BranchMetrics", "Revenue"]
+    permissions: ["view_branch_analytics", "export_reports"]
+    
+  profit_analysis_section:
+    business_logic: "Profit breakdown by branch and shipper"
+    data_sources: ["revenue_data", "cost_data", "shipper_rates"]
+    calculations:
+      - profit_by_branch
+      - profit_by_shipper
+      - margin_analysis
+    database_models: ["Revenue", "Cost", "ShipperRate", "Shipment"]
+    permissions: ["view_profit_analysis"]
+    
+  export_functions_section:
+    business_logic: "Data export for external analysis"
+    export_formats: ["excel", "csv", "pdf"]
+    date_range_selection: true
+    database_models: ["All reporting models"]
+    permissions: ["export_data"]
+```
+
+#### **Billing Management (/admin/reports/billing)**
+```yaml
+business_functions:
+  monthly_summary_section:
+    business_logic: "Monthly billing summary for Excel export and manual invoicing"
+    data_sources: ["monthly_revenue", "branch_performance", "shipment_counts"]
+    billing_calculations:
+      - monthly_revenue_per_branch
+      - shipment_volume_charges
+      - add_on_product_sales
+      - total_billing_amount
+    database_models: ["Revenue", "Shipment", "BranchProduct", "MonthlyBilling"]
+    permissions: ["generate_billing", "export_billing_data"]
+    
+  audit_reports_section:
+    business_logic: "Compliance audit reports for regulatory requirements"
+    audit_types:
+      - pricing_change_audit
+      - user_activity_audit
+      - shipment_activity_audit
+    database_models: ["AuditLog", "PricingAudit", "UserAudit", "ShipmentAudit"]
+    permissions: ["view_audit_reports", "export_audit_data"]
+```
+
+### **Audit Menu Functions:**
+
+#### **Compliance Tracking (/admin/audit/activities)**
+```yaml
+business_functions:
+  pricing_changes_section:
+    business_logic: "Complete audit trail for all pricing modifications"
+    audit_tracking:
+      - shipper_rate_changes
+      - markup_modifications
+      - retail_rate_updates
+      - user_who_made_change
+      - timestamp_of_change
+      - before_after_values
+    database_models: ["PricingAudit", "User", "AuditLog"]
+    permissions: ["view_pricing_audit"]
+    
+  user_activities_section:
+    business_logic: "Detailed user action logging for compliance"
+    activity_tracking:
+      - login_logout_events
+      - permission_changes
+      - data_modifications
+      - system_access_patterns
+    database_models: ["UserActivity", "User", "ActivityLog"]
+    permissions: ["view_user_audit"]
+    
+  shipment_activities_section:
+    business_logic: "Shipment audit trail for regulatory compliance"
+    shipment_tracking:
+      - shipment_creation_details
+      - status_change_history
+      - modification_records
+      - api_interaction_logs
+    database_models: ["ShipmentAudit", "Shipment", "APILog"]
+    permissions: ["view_shipment_audit"]
+```
+
+## 🏪 **BRANCH ADMIN BUSINESS FUNCTION MAPPING:**
+
+### **Dashboard Functions:**
+
+#### **Branch Dashboard (/branch-admin/dashboard)**
+```yaml
+business_functions:
+  performance_overview_section:
+    business_logic: "Branch-isolated performance monitoring"
+    data_isolation: "current_branch_only"
+    data_sources: ["branch_shipments", "branch_revenue", "branch_metrics"]
+    metrics:
+      - daily_shipment_count
+      - daily_revenue
+      - staff_performance
+      - customer_satisfaction
+    database_models: ["Shipment", "Revenue", "Staff", "Customer"]
+    permissions: ["view_branch_performance"]
+    
+  daily_summary_section:
+    business_logic: "Today's operational summary"
+    real_time_data: true
+    summary_metrics:
+      - todays_shipments
+      - todays_revenue
+      - pending_shipments
+      - problem_shipments
+    database_models: ["Shipment", "Revenue", "ShipmentStatus"]
+    permissions: ["view_daily_operations"]
+```
+
+### **Staff Functions:**
+
+#### **Staff Management (/branch-admin/staff/list)**
+```yaml
+business_functions:
+  staff_datatable_section:
+    business_logic: "Branch-specific staff management (simplified)"
+    data_isolation: "current_branch_only"
+    staff_management:
+      - basic_staff_information
+      - role_assignments
+      - contact_details
+      - work_schedules
+    database_models: ["Staff", "User", "Role", "Schedule"]
+    permissions: ["manage_branch_staff"]
+    actions:
+      edit_staff:
+        route: "/branch-admin/staff/edit/{id}"
+        permission: "edit_staff"
+      manage_schedule:
+        action: "update_staff_schedule"
+        permission: "manage_schedules"]
+```
+
+### **Products Functions:**
+
+#### **Branch Add-ons (/branch-admin/products/list)**
+```yaml
+business_functions:
+  product_datatable_section:
+    business_logic: "Branch add-on product management (pricing only)"
+    data_isolation: "current_branch_only"
+    product_types:
+      - shipping_boxes
+      - shipping_labels
+      - packaging_supplies
+      - protective_materials
+    pricing_model: "add_on_cost_calculation"
+    database_models: ["BranchProduct", "ProductType", "ProductPricing"]
+    permissions: ["manage_branch_products"]
+    actions:
+      edit_product:
+        route: "/branch-admin/products/edit/{id}"
+        permission: "edit_product_pricing"
+      update_pricing:
+        action: "update_product_price"
+        permission: "manage_product_pricing"
+```
+
+### **Customers Functions:**
+
+#### **Customer Database (/branch-admin/customers/list)**
+```yaml
+business_functions:
+  customer_datatable_section:
+    business_logic: "Centralized customer data access with integrated search functionality"
+    data_centralization: "all_branches_shared"
+    search_capabilities:
+      - id_card_search
+      - name_search
+      - phone_search
+      - autocomplete_functionality
+    three_person_model:
+      - customer_management: "person who pays"
+      - sender_management: "person who ships"
+      - receiver_management: "person who receives"
+    database_models: ["Customer", "Sender", "Receiver", "Address"]
+    permissions: ["access_customer_database", "manage_customers"]
+    actions:
+      edit_customer:
+        route: "/branch-admin/customers/edit/{id}"
+        permission: "edit_customer"
+      view_history:
+        route: "/branch-admin/customers/history/{id}"
+        permission: "view_customer_history"
+      manage_senders:
+        route: "/branch-admin/customers/edit/{id}#sender-management"
+        permission: "manage_senders"
+      manage_receivers:
+        route: "/branch-admin/customers/edit/{id}#receiver-management"
+        permission: "manage_receivers"
+```
+
+### **Shipments Functions:**
+
+#### **Shipment Operations (/branch-admin/shipments/list)**
+```yaml
+business_functions:
+  all_shipments_section:
+    business_logic: "Branch shipment oversight and management"
+    data_isolation: "current_branch_only"
+    shipment_display:
+      - customer_sender_receiver_details
+      - shipment_status_tracking
+      - real_time_updates
+    database_models: ["Shipment", "Customer", "Sender", "Receiver", "ShipmentStatus"]
+    permissions: ["view_branch_shipments"]
+    actions:
+      view_shipment:
+        route: "/branch-admin/shipments/view/{id}"
+        permission: "view_shipment_details"
+      track_shipment:
+        action: "get_tracking_status"
+        permission: "track_shipments"
+      resolve_problems:
+        action: "update_problem_status"
+        permission: "resolve_shipment_problems"
+      print_labels:
+        action: "generate_shipping_label"
+        permission: "print_shipping_labels"
+```
+
+## 👨‍💼 **BRANCH STAFF BUSINESS FUNCTION MAPPING:**
+
+### **Shipments Functions:**
+
+#### **Create Shipment (/staff/shipments/create)**
+```yaml
+business_functions:
+  seven_step_workflow:
+    business_logic: "Single page shipment creation with progressive steps"
+    workflow_steps:
+      1_customer_entry:
+        business_logic: "Customer identification and selection"
+        data_source: "centralized_customer_database"
+        search_types: ["id_card", "name", "phone"]
+        autocomplete: true
+        database_models: ["Customer"]
+        permissions: ["create_shipments", "access_customer_data"]
+        
+      2_sender_entry:
+        business_logic: "Sender selection from customer's sender addresses"
+        data_source: "centralized_sender_database"
+        address_selection: "dropdown_with_add_new"
+        database_models: ["Sender", "Address"]
+        permissions: ["access_sender_data"]
+        
+      3_receiver_entry:
+        business_logic: "Receiver information input with address validation"
+        address_validation: "real_time_api_validation"
+        database_models: ["Receiver", "Address"]
+        permissions: ["create_receiver_data"]
+        
+      4_package_details:
+        business_logic: "Package weight, dimensions, and product type classification"
+        input_fields:
+          - weight_measurement
+          - dimension_input
+          - product_type_selection
+        hardware_integration: "digital_scale_support"
+        database_models: ["Package", "ProductType"]
+        permissions: ["input_package_details"]
+        
+      5_product_selection:
+        business_logic: "Branch add-on product selection for cost calculation"
+        data_source: "branch_specific_products"
+        cost_calculation: "real_time_add_on_pricing"
+        database_models: ["BranchProduct", "ProductPricing"]
+        permissions: ["sell_branch_products"]
+        
+      6_get_quote:
+        business_logic: "Real-time API quote from multiple shippers"
+        api_integration:
+          - fedex_real_time_quote
+          - dhl_real_time_quote
+          - ups_real_time_quote
+        price_calculation:
+          - base_shipper_rate
+          - branch_markup_application
+          - add_on_product_costs
+          - final_customer_price
+        database_models: ["ShipperQuote", "ShipperRate", "BranchMarkup"]
+        permissions: ["get_shipping_quotes"]
+        
+      7_payment_confirmation:
+        business_logic: "Payment processing and shipment confirmation"
+        payment_types: ["cash", "card", "account_credit"]
+        shipment_generation: "create_final_shipment_record"
+        label_generation: "queue_for_label_printing"
+        database_models: ["Shipment", "Payment", "PrintQueue"]
+        permissions: ["process_payments", "create_shipments"]
+```
+
+#### **Print Center (/staff/printing/queue)**
+```yaml
+business_functions:
+  label_queue_section:
+    business_logic: "Browser-based label printing from shipper API image URLs"
+    printing_method: "browser_printing_from_image_urls"
+    api_integration:
+      - fedex_label_image_url
+      - dhl_label_image_url
+      - ups_label_image_url
+    queue_management:
+      - batch_printing_support
+      - preview_functionality
+      - print_history_tracking
+    database_models: ["PrintQueue", "ShippingLabel", "PrintHistory"]
+    permissions: ["print_shipping_labels"]
+    
+  receipt_queue_section:
+    business_logic: "Customer receipt generation and printing"
+    receipt_types:
+      - payment_receipts
+      - shipment_confirmations
+      - add_on_product_receipts
+    database_models: ["Receipt", "Payment", "Shipment"]
+    permissions: ["print_receipts"]
+```
+
+## 🗄️ **DATABASE MODELS & RELATIONSHIPS:**
+
+### **Core Business Models:**
+```yaml
+Branch:
+  fields:
+    - id (primary key)
+    - name
+    - address
+    - contact_info
+    - status
+    - created_at
+    - updated_at
+  relationships:
+    - has_many: shipments
+    - has_many: staff_members
+    - has_many: branch_products
+    - has_many: branch_shipper_rates
+
+Customer:
+  fields:
+    - id (primary key)
+    - id_card_number (unique)
+    - name
+    - phone
+    - email
+    - created_at
+    - updated_at
+  relationships:
+    - has_many: senders
+    - has_many: receivers
+    - has_many: shipments
+
+Sender:
+  fields:
+    - id (primary key)
+    - customer_id (foreign key)
+    - name
+    - phone
+    - address_line_1
+    - address_line_2
+    - city
+    - state
+    - postal_code
+    - country
+  relationships:
+    - belongs_to: customer
+    - has_many: shipments
+
+Receiver:
+  fields:
+    - id (primary key)
+    - name
+    - phone
+    - address_line_1
+    - address_line_2
+    - city
+    - state
+    - postal_code
+    - country
+  relationships:
+    - has_many: shipments
+
+Shipment:
+  fields:
+    - id (primary key)
+    - tracking_number (unique)
+    - branch_id (foreign key)
+    - customer_id (foreign key)
+    - sender_id (foreign key)
+    - receiver_id (foreign key)
+    - shipper_id (foreign key)
+    - package_weight
+    - package_dimensions
+    - product_type_id
+    - base_cost
+    - markup_amount
+    - add_on_costs
+    - total_cost
+    - status
+    - created_by (user_id)
+    - created_at
+    - updated_at
+  relationships:
+    - belongs_to: branch
+    - belongs_to: customer
+    - belongs_to: sender
+    - belongs_to: receiver
+    - belongs_to: shipper
+    - belongs_to: product_type
+    - belongs_to: created_by (User)
+    - has_many: shipment_audit_logs
+
+Shipper:
+  fields:
+    - id (primary key)
+    - name (FedEx, DHL, UPS)
+    - api_endpoint
+    - api_credentials (encrypted)
+    - status
+    - created_at
+    - updated_at
+  relationships:
+    - has_many: shipper_rates
+    - has_many: shipments
+    - has_many: api_logs
+
+ShipperRate:
+  fields:
+    - id (primary key)
+    - shipper_id (foreign key)
+    - branch_id (foreign key)
+    - base_rate_percentage
+    - base_rate_fixed_amount
+    - markup_percentage
+    - markup_fixed_amount
+    - effective_from
+    - effective_to
+  relationships:
+    - belongs_to: shipper
+    - belongs_to: branch
+
+ProductType:
+  fields:
+    - id (primary key)
+    - name (food, clothes, glass, electronics, etc.)
+    - description
+  relationships:
+    - has_many: shipments
+    - has_many: branch_products
+
+BranchProduct:
+  fields:
+    - id (primary key)
+    - branch_id (foreign key)
+    - product_type_id (foreign key)
+    - name
+    - description
+    - price
+    - created_at
+    - updated_at
+  relationships:
+    - belongs_to: branch
+    - belongs_to: product_type
+```
+
+### **Audit & Compliance Models:**
+```yaml
+AuditLog:
+  fields:
+    - id (primary key)
+    - user_id (foreign key)
+    - action
+    - model_type
+    - model_id
+    - old_values (json)
+    - new_values (json)
+    - ip_address
+    - user_agent
+    - created_at
+  relationships:
+    - belongs_to: user
+
+PricingAudit:
+  fields:
+    - id (primary key)
+    - user_id (foreign key)
+    - shipper_rate_id (foreign key)
+    - old_rate_data (json)
+    - new_rate_data (json)
+    - change_reason
+    - created_at
+  relationships:
+    - belongs_to: user
+    - belongs_to: shipper_rate
+
+UserActivity:
+  fields:
+    - id (primary key)
+    - user_id (foreign key)
+    - activity_type
+    - description
+    - ip_address
+    - user_agent
+    - created_at
+  relationships:
+    - belongs_to: user
+```
+
+## 🔌 **API INTEGRATION SPECIFICATIONS:**
+
+### **Shipper API Integration:**
+```yaml
+FedExAPI:
+  endpoints:
+    rate_quote: "POST /rate/v1/rates/quotes"
+    create_shipment: "POST /ship/v1/shipments"
+    track_shipment: "POST /track/v1/trackingnumbers"
+    generate_label: "POST /ship/v1/shipments/{id}/confirm"
+  authentication: "OAuth 2.0"
+  rate_limit: "100 requests/minute"
+  response_format: "JSON"
+  
+DHLAPI:
+  endpoints:
+    rate_quote: "POST /mydhlapi/rates"
+    create_shipment: "POST /mydhlapi/shipments"
+    track_shipment: "GET /mydhlapi/track/shipments"
+    generate_label: "GET /mydhlapi/shipments/{id}/label"
+  authentication: "API Key"
+  rate_limit: "150 requests/minute"
+  response_format: "JSON"
+  
+UPSAPI:
+  endpoints:
+    rate_quote: "POST /api/rating/v1/rate"
+    create_shipment: "POST /api/shipments/v1/ship"
+    track_shipment: "GET /api/track/v1/details/{tracking_number}"
+    generate_label: "POST /api/labels/v1/recovery"
+  authentication: "OAuth 2.0"
+  rate_limit: "200 requests/minute"
+  response_format: "JSON"
+```
+
+### **Real-time Quote Integration:**
+```yaml
+quote_workflow:
+  1_collect_shipment_data:
+    - package_weight
+    - package_dimensions
+    - origin_address
+    - destination_address
+    - product_type
+    
+  2_call_multiple_apis:
+    - fedex_quote_request
+    - dhl_quote_request
+    - ups_quote_request
+    
+  3_process_responses:
+    - parse_api_responses
+    - apply_branch_markup
+    - calculate_add_on_costs
+    - format_customer_pricing
+    
+  4_display_options:
+    - show_shipper_options
+    - show_delivery_times
+    - show_final_prices
+    - allow_customer_selection
+```
+
+## 🔐 **SECURITY & PERMISSION MATRIX:**
+
+### **Role-based Permissions:**
+```yaml
+CompanyAdmin:
+  dashboard: ["view_all_branches", "access_financial_data", "monitor_system_health"]
+  branches: ["manage_branches", "configure_branch_rates", "manage_branch_products"]
+  shippers: ["manage_shippers", "configure_api", "manage_product_types"]
+  users: ["manage_users", "assign_roles", "view_user_activity", "reset_passwords"]
+  reports: ["view_branch_analytics", "export_reports", "generate_billing"]
+  audit: ["view_all_audits", "export_audit_data"]
+
+BranchAdmin:
+  dashboard: ["view_branch_performance", "view_daily_operations"]
+  staff: ["manage_branch_staff", "edit_staff", "manage_schedules"]
+  products: ["manage_branch_products", "edit_product_pricing"]
+  customers: ["access_customer_database", "manage_customers", "view_customer_history"]
+  shipments: ["view_branch_shipments", "track_shipments", "resolve_problems"]
+  reports: ["view_branch_analytics", "export_branch_data"]
+
+BranchStaff:
+  shipments: ["create_shipments", "get_shipping_quotes", "process_payments"]
+  print_center: ["print_shipping_labels", "print_receipts", "manage_print_queue"]
+  customers: ["access_customer_data", "search_customers", "view_customer_history"]
+  tools: ["use_package_tools", "access_cost_calculator"]
+  products: ["sell_branch_products", "view_product_catalog"]
+  my_work: ["view_personal_dashboard", "manage_personal_tasks"]
+```
+
+## 🏗️ **TECHNICAL ARCHITECTURE:**
+
+### **Laravel Backend Structure:**
+```yaml
+Modules:
+  ShipmentModule:
+    - Controllers: ShipmentController, QuoteController
+    - Services: ShipmentService, QuoteService, APIIntegrationService
+    - Models: Shipment, ShipperQuote, Package
+    - Jobs: ProcessShipmentJob, GenerateLabelJob
+    
+  CustomerModule:
+    - Controllers: CustomerController, SenderController, ReceiverController
+    - Services: CustomerService, AddressValidationService
+    - Models: Customer, Sender, Receiver, Address
+    
+  BranchModule:
+    - Controllers: BranchController, BranchRateController
+    - Services: BranchService, RateCalculationService
+    - Models: Branch, BranchShipperRate, BranchProduct
+    
+  UserModule:
+    - Controllers: UserController, RoleController
+    - Services: UserService, PermissionService
+    - Models: User, Role, Permission, UserActivity
+    
+  AuditModule:
+    - Controllers: AuditController
+    - Services: AuditService
+    - Models: AuditLog, PricingAudit, UserActivity
+    - Traits: Auditable
+```
+
+### **Vue.js Frontend Components:**
+```yaml
+CompanyAdminComponents:
+  - DashboardOverview.vue
+  - BranchComparison.vue
+  - ShipperManagement.vue
+  - UserManagement.vue
+  - AuditReports.vue
+  
+BranchAdminComponents:
+  - BranchDashboard.vue
+  - StaffManagement.vue
+  - ProductManagement.vue
+  - CustomerDatabase.vue
+  - ShipmentOperations.vue
+  
+BranchStaffComponents:
+  - ShipmentCreation.vue (7-step workflow)
+  - PrintCenter.vue
+  - CustomerSearch.vue
+  - PackageTools.vue
+  - PersonalDashboard.vue
+
+SharedComponents:
+  - DataTable.vue
+  - FormBuilder.vue
+  - ChartDisplay.vue
+  - PrintQueue.vue
+  - FileExport.vue
+```
+
+## 🎯 **IMPLEMENTATION PRIORITY:**
+
+### **Phase 1 (Core Functionality):**
+1. User Authentication & Role Management
+2. Basic Customer/Sender/Receiver Management
+3. Simple Shipment Creation Workflow
+4. Basic Branch Management
+
+### **Phase 2 (API Integration):**
+1. Shipper API Integration (FedEx, DHL, UPS)
+2. Real-time Quote System
+3. Label Generation & Printing
+4. Tracking Integration
+
+### **Phase 3 (Advanced Features):**
+1. Comprehensive Reporting
+2. Audit & Compliance System
+3. Advanced Analytics
+4. Performance Optimization
+
+### **Phase 4 (Enhancement):**
+1. Mobile Responsive Design
+2. Advanced Search & Filters
+3. Bulk Operations
+4. API Rate Optimization
+
+**STATUS:** ✅ BUSINESS FUNCTION MAPPING COMPLETE
+**READY FOR:** Development Phase Planning & Implementation 

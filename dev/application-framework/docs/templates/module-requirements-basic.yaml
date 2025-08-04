@@ -1,0 +1,55 @@
+# =================================================================
+# BASIC MODULE REQUIREMENTS - USER INPUT
+# =================================================================
+# Just describe what you want in simple terms. AI will handle the rest.
+# NOTE: For detailed example, see /dev/module-framework/examples/product-module/
+# =================================================================
+
+# MODULE ORGANIZATION
+module_folder: "Product"                 # Laravel module name (use PascalCase)
+output_organization: true                # Create all files in organized structure
+application_name: "ShipCentral"         # Your application name
+
+# BASIC REQUIREMENT (Choose one method):
+
+# METHOD 1: Simple Description
+user_requirement: |
+  I want to create product module for ecommerce. 
+  Product should have name, description, price, cost, and image upload.
+  Admin only access for managing products with DataTable listing.
+
+# METHOD 2: Basic Structure (Optional - AI will ask for details anyway)
+entity_fields:
+  - "name"
+  - "description"  
+  - "price"
+  - "cost"
+  - "image"
+
+# =================================================================
+# FILE ORGANIZATION:
+# This file should be saved at:
+# dev/module-framework/modules/[application-name]/[module-name]/module-requirements-basic.yaml
+# 
+# Example paths:
+# dev/module-framework/modules/shipcentral/product/module-requirements-basic.yaml
+# dev/module-framework/modules/myblog/post/module-requirements-basic.yaml
+# dev/module-framework/modules/ecommerce/category/module-requirements-basic.yaml
+# =================================================================
+
+# =================================================================
+# AI INSTRUCTIONS - FOLLOW EXACTLY:
+# 1. READ: /dev/module-framework/docs/ai-instructions.md (COMPLETE WORKFLOW)
+# 2. ANALYZE: /Modules/User/ (use as pattern)
+# 3. PARSE: Requirements above
+# 4. CREATE: module-questions.yaml (YAML format, follow ai-instructions.md examples)
+# 5. WAIT: For user answers before proceeding
+# 6. CREATE: module-specification-detailed.yaml (detailed specs)
+# 7. READ CORE COMPONENTS: /dev/module-framework/docs/core-components-guide.md
+# 8. ANALYZE: AdminController.php, Helper.php, layouts/, html/ patterns
+# 9. GENERATE: Working module code in /Modules/Product/
+# 
+# CRITICAL: Follow ai-instructions.md workflow exactly - use YAML formats as shown
+# MUST read core-components-guide.md before generating any code!
+# NOTE: See /dev/module-framework/examples/ for detailed requirements examples
+# ================================================================= 

@@ -1,0 +1,129 @@
+# =================================================================
+# APPLICATION IDEA - SIMPLE USER INPUT
+# =================================================================
+# Just describe your application idea simply. AI will help expand it.
+# =================================================================
+
+# BASIC APPLICATION IDEA
+application_idea:
+  name: "ShipCentral"                    # What do you want to call it?
+  basic_description: |
+    Multi-level shipping platform where our company connects to multiple shippers 
+    (FedEx, DHL, UPS) and provides shipping services to branches with markup pricing.
+    Branches then serve end customers with their own markup.
+  
+  application_type: "admin_panel"        # admin_panel|website|mobile_app|api|other
+
+# WHAT YOU DO (Your Business)
+your_business:
+  business_type: "logistics_middleman"   # ecommerce|service|manufacturing|education|logistics|other
+  what_you_sell: "shipping services with markup pricing"
+  current_situation: |
+    We negotiate special rates with multiple shipping companies (FedEx, DHL, UPS).
+    Then we provide these services to our branch partners with markup.
+    Branches add their own markup when serving end customers.
+    Everything is currently manual and hard to track profits at each level.
+
+# WHAT YOU WANT TO ACHIEVE
+your_goals:
+  main_problem: |
+    Need centralized system to manage multi-level pricing chain:
+    Shipper Cost ($10) → Company Price ($12) → Branch Price ($15) → Customer Price
+    Hard to track profits, manage multiple branches, and integrate with shipper APIs.
+  
+  what_you_want: |
+    Centralized platform where:
+    - Company admin can manage all shippers and their APIs
+    - Manage multiple branches with different markup rules per shipper
+    - Branch staff can create shipments and serve customers
+    - Track costs and profits at each level (company and branch)
+    - Integrate with shipper APIs for real rates and label printing
+
+# WHO WILL USE IT & WHAT THEY CAN DO
+user_roles_and_capabilities:
+  company_admin:
+    who: "Company headquarters staff (5-10 people)"
+    what_they_can_do:
+      - "Manage all shippers (FedEx, DHL, UPS) - add/edit/remove"
+      - "Configure shipper API connections and credentials"
+      - "Manage all branches - add new branches, edit details"
+      - "Set markup rules for each branch per shipper (FedEx +$2, DHL +$3)"
+      - "View all branch activities and shipments"
+      - "Generate company-level reports (profit analysis across all branches)"
+      - "Manage company admin users"
+      - "View cost breakdowns: shipper cost vs company profit vs branch profit"
+    access_level: "Full system access"
+
+  branch_admin:
+    who: "Branch managers (1 per branch)"
+    what_they_can_do:
+      - "Manage branch staff users (add/edit/remove branch employees)"
+      - "Manage branch product inventory (boxes, labels, supplies)"
+      - "Set branch business settings and preferences"
+      - "View branch-specific reports (branch costs, profits, performance)"
+      - "Access all branch shipping operations"
+      - "Manage branch customer database (senders/receivers)"
+    access_level: "Branch-only access (cannot see other branches)"
+
+  branch_staff:
+    who: "Branch employees (2-5 per branch)"
+    what_they_can_do:
+      - "Create new shipments for customers"
+      - "Search and select senders/receivers from database"
+      - "Calculate shipping costs with real-time API calls"
+      - "Add additional products (boxes, labels, supplies) to orders"
+      - "Print shipping labels and customer receipts"
+      - "Track shipment status"
+      - "View daily shipping records for their branch only"
+    access_level: "Branch operations only (no admin functions)"
+
+# SIMPLE REQUIREMENTS
+basic_needs:
+  must_have:
+    - "Manage multiple shippers and their API integrations"
+    - "Manage branches with individual markup configurations"
+    - "Branch-level shipping operations (create shipments, print labels)"
+    - "Multi-level reporting (company profits vs branch profits)"
+    - "Sender/receiver database with search"
+    - "Pricing calculations with markup chains"
+  
+  would_be_nice:
+    - "Real-time tracking integration"
+    - "Mobile access for branch staff" 
+    - "Automated low-stock alerts for supplies"
+    - "Advanced analytics and forecasting"
+    - "API for branch integration"
+
+# TECHNICAL LEVEL
+technical_info:
+  your_technical_level: "intermediate"   # basic|intermediate|advanced
+  special_requirements: |
+    - Must integrate with shipper APIs (FedEx, DHL, UPS APIs)
+    - Multi-tenant architecture (company vs branch access)
+    - Real-time pricing calculations
+    - Label printing capabilities
+  existing_systems: "currently using spreadsheets and manual processes"
+
+# BUSINESS COMPLEXITY
+business_complexity:
+  user_levels: "multi_level"             # single_level|multi_level
+  pricing_model: "multi_tier_markup"     # simple|markup|multi_tier_markup|complex
+  data_relationships: "complex"          # simple|moderate|complex
+  integration_needs: "multiple_apis"     # none|single_api|multiple_apis|enterprise
+
+# SCALE EXPECTATIONS
+scale_expectations:
+  initial_branches: "5 branches"
+  expected_growth: "20+ branches within 2 years"
+  daily_shipments: "50-200 shipments per branch"
+  concurrent_users: "10-50 users across all branches"
+
+# =================================================================
+# AI INSTRUCTIONS:
+# 1. Read this complex business idea and understand the multi-level context
+# 2. Pay special attention to user roles and what each can do
+# 3. Ask clarifying questions about business workflows and technical details
+# 4. Generate modules that support the different user capabilities
+# 5. Create detailed breakdown with controller/feature specifications
+# 6. Generate individual module requirements for development
+# ================================================================= 

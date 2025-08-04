@@ -1,0 +1,420 @@
+# MODULE BREAKDOWN PLANNING - SHIPCENTRAL (STEP 7)
+# COMPREHENSIVE MODULE IDENTIFICATION & DEVELOPMENT STRATEGY
+# STATUS: READY FOR USER REVIEW
+
+## 📋 **PLANNING OVERVIEW:**
+
+### **Input Sources:**
+- ✅ Final Technical Architecture (Step 6) - Complete
+- ✅ Business Function Mapping (Step 4) - Complete  
+- ✅ UI Structure V8 (Step 3) - Finalized
+- ✅ User Technology Choices - Laravel 8.12, Blade + jQuery, MariaDB, Bootstrap 5
+
+### **Purpose:**
+Identify all modules needed for ShipCentral application and plan their development sequence based on dependencies and business priorities.
+
+## 🏗️ **IDENTIFIED MODULES FOR SHIPCENTRAL:**
+
+### **Foundation Modules (Phase 1 - Essential Infrastructure):**
+
+#### **1. User Module Enhancement:**
+```yaml
+module_name: "User"
+status: "EXTEND EXISTING"
+priority: "CRITICAL - Phase 1"
+description: "Enhance existing User module for multi-branch shipping business"
+business_purpose: "Handle 3-tier user system: Company Admin → Branch Admin → Branch Staff"
+
+key_enhancements:
+  - "Add branch association to users"
+  - "Implement AdminController naming pattern"
+  - "Add shipping-specific roles and permissions"
+  - "Multi-branch access control"
+
+controllers_needed:
+  - "UserAdminController: Company admin manages all users"
+  - "BranchUserAdminController: Branch admin manages branch staff"
+  - "LoginController: Authentication for all user types"
+
+technology_stack:
+  framework: "Laravel 8.12"
+  frontend: "Blade + jQuery"
+  database: "MariaDB"
+  ui: "Bootstrap 5 + DataTables"
+
+development_estimate: "1-2 weeks"
+dependencies: []
+affects: ["ALL OTHER MODULES"]
+```
+
+#### **2. Branch Module:**
+```yaml
+module_name: "Branch"
+status: "CREATE NEW"
+priority: "CRITICAL - Phase 1"
+description: "Multi-branch operations and rate management"
+business_purpose: "Manage different shipping branches with isolated operations and custom markup rules"
+
+core_features:
+  - "Branch registration and configuration"
+  - "Rate markup management per shipper"
+  - "Branch performance tracking"
+  - "Branch isolation enforcement"
+
+controllers_needed:
+  - "BranchAdminController: Company admin manages branches"
+  - "BranchSettingsController: Branch admin manages own settings"
+  - "BranchReportController: Branch performance and analytics"
+
+models_needed:
+  - "Branch: Branch details and configuration"
+  - "BranchMarkup: Markup rules per branch per shipper"
+  - "BranchReport: Performance analytics"
+
+technology_stack:
+  framework: "Laravel 8.12"
+  frontend: "Blade + jQuery"
+  database: "MariaDB"
+  ui: "Bootstrap 5 + DataTables"
+
+development_estimate: "2-3 weeks"
+dependencies: ["User"]
+affects: ["Customer", "Shipment", "Shipper", "Audit"]
+```
+
+### **Business Core Modules (Phase 2 - Main Business Logic):**
+
+#### **3. Customer Module:**
+```yaml
+module_name: "Customer"
+status: "CREATE NEW"
+priority: "HIGH - Phase 2"
+description: "Centralized customer/sender/receiver management"
+business_purpose: "Single database for all customer data shared across branches with sender multiple addresses"
+
+core_features:
+  - "Centralized customer database"
+  - "Three-person model: Customer → Sender → Receiver"
+  - "Multiple addresses per sender"
+  - "Cross-branch customer sharing"
+  - "Customer search and autocomplete"
+
+controllers_needed:
+  - "CustomerAdminController: Branch admin manages customers"
+  - "CustomerController: Branch staff customer lookup"
+  - "SenderController: Sender information management"
+  - "ReceiverController: Receiver information management"
+
+models_needed:
+  - "Customer: Basic customer information"
+  - "Sender: Sender details with multiple addresses"
+  - "Receiver: Receiver information"
+  - "Address: Address management for senders/receivers"
+
+technology_stack:
+  framework: "Laravel 8.12"
+  frontend: "Blade + jQuery with autocomplete"
+  database: "MariaDB with simple indexes"
+  ui: "Bootstrap 5 + DataTables + Select2"
+
+development_estimate: "2-3 weeks"
+dependencies: ["User", "Branch"]
+affects: ["Shipment"]
+```
+
+#### **4. Shipment Module:**
+```yaml
+module_name: "Shipment"
+status: "CREATE NEW" 
+priority: "HIGH - Phase 2"
+description: "Core shipping operations and 7-step workflow"
+business_purpose: "Handle complete shipment creation process from customer selection to payment confirmation"
+
+core_features:
+  - "7-step shipment creation workflow"
+  - "Single-page progressive form with session storage"
+  - "Real-time quote integration"
+  - "Package details and service selection"
+  - "Branch-isolated shipment management"
+
+controllers_needed:
+  - "ShipmentController: Branch staff creates shipments"
+  - "QuoteController: Real-time quote generation"
+  - "PrintController: Label printing functionality"
+  - "TrackingController: Shipment tracking and status"
+
+models_needed:
+  - "Shipment: Main shipment record"
+  - "Package: Package details (weight, dimensions)"
+  - "ShipmentStatus: Status tracking and history"
+  - "ShipmentRate: Applied rates and markups"
+
+workflow_steps:
+  step_1: "Customer Selection/Creation"
+  step_2: "Sender Information"
+  step_3: "Receiver Information" 
+  step_4: "Package Details (weight, dimensions)"
+  step_5: "Service Selection (express, standard)"
+  step_6: "Rate Comparison & Selection"
+  step_7: "Payment & Confirmation"
+
+technology_stack:
+  framework: "Laravel 8.12"
+  frontend: "Blade + jQuery with progressive forms"
+  database: "MariaDB with branch isolation"
+  ui: "Bootstrap 5 with step-by-step wizard"
+
+development_estimate: "3-4 weeks"
+dependencies: ["User", "Branch", "Customer", "Shipper"]
+affects: ["Audit"]
+```
+
+### **Integration Modules (Phase 3 - External Services):**
+
+#### **5. Shipper Module:**
+```yaml
+module_name: "Shipper"
+status: "CREATE NEW"
+priority: "HIGH - Phase 3"
+description: "API integration for Thailand Post, J&T Express, Flash Express"
+business_purpose: "Handle all shipping carrier integrations with real-time quotes, label generation, and tracking"
+
+core_features:
+  - "Thailand Post API integration"
+  - "J&T Express API integration"
+  - "Flash Express API integration"
+  - "Real-time quote generation"
+  - "Label generation and printing"
+  - "Shipment tracking integration"
+  - "API failure handling with cached quotes"
+
+controllers_needed:
+  - "ShipperAdminController: Company admin manages API credentials"
+  - "ShipperApiController: Handle API calls and responses"
+  - "RateController: Manage shipping rates and comparisons"
+
+models_needed:
+  - "Shipper: Shipping carrier information"
+  - "ShipperApi: API credentials and configuration"
+  - "ShippingRate: Rate cache and history"
+  - "ApiLog: API call logging and monitoring"
+
+api_integrations:
+  thailand_post:
+    features: ["quotes", "labels", "tracking"]
+    priority: "High"
+  jt_express:
+    features: ["quotes", "labels", "tracking"]
+    priority: "High"
+  flash_express:
+    features: ["quotes", "labels", "tracking"]
+    priority: "High"
+
+technology_stack:
+  framework: "Laravel 8.12"
+  frontend: "Blade + jQuery"
+  database: "MariaDB with API caching"
+  ui: "Bootstrap 5"
+  apis: "RESTful API calls with fallback caching"
+
+development_estimate: "3-4 weeks"
+dependencies: ["User", "Branch"]
+affects: ["Shipment", "Quote"]
+```
+
+#### **6. Product Module:**
+```yaml
+module_name: "Product"
+status: "CREATE NEW"
+priority: "MEDIUM - Phase 3"
+description: "Product categories and add-on management"
+business_purpose: "Manage product categories for shipments and additional services/add-ons"
+
+core_features:
+  - "Product category management"
+  - "Add-on services (insurance, special handling)"
+  - "Product-based shipping rules"
+  - "Branch-specific product availability"
+
+controllers_needed:
+  - "ProductAdminController: Manage products and categories"
+  - "ProductController: Product selection for shipments"
+  - "AddOnController: Additional service management"
+
+models_needed:
+  - "Product: Product information and categories"
+  - "ProductCategory: Product categorization"
+  - "AddOnService: Additional services and pricing"
+  - "BranchProduct: Branch-specific product availability"
+
+technology_stack:
+  framework: "Laravel 8.12"
+  frontend: "Blade + jQuery"
+  database: "MariaDB"
+  ui: "Bootstrap 5 + DataTables"
+
+development_estimate: "2-3 weeks"
+dependencies: ["User", "Branch"]
+affects: ["Shipment"]
+```
+
+### **Compliance & Analytics Modules (Phase 4 - Supporting Operations):**
+
+#### **7. Audit Module:**
+```yaml
+module_name: "Audit"
+status: "CREATE NEW"
+priority: "HIGH - Phase 4"
+description: "Compliance tracking and audit trails"
+business_purpose: "Track all changes for shipping compliance and provide complete audit history"
+
+core_features:
+  - "Complete change tracking for all modules"
+  - "User action logging"
+  - "Data modification history"
+  - "Compliance reporting"
+  - "Security audit trails"
+
+controllers_needed:
+  - "AuditAdminController: Company admin audit management"
+  - "AuditReportController: Generate compliance reports"
+  - "AuditLogController: View audit logs and history"
+
+models_needed:
+  - "AuditLog: Complete audit trail records"
+  - "UserAction: User activity tracking"
+  - "DataChange: Data modification history"
+  - "ComplianceReport: Regulatory compliance tracking"
+
+technology_stack:
+  framework: "Laravel 8.12"
+  frontend: "Blade + jQuery"
+  database: "MariaDB with audit tables"
+  ui: "Bootstrap 5 + DataTables"
+
+development_estimate: "2-3 weeks"
+dependencies: ["User", "Branch", "Shipment"]
+affects: []
+```
+
+## 📊 **DEVELOPMENT PHASES & TIMELINE:**
+
+### **Phase 1: Foundation (4-5 weeks)**
+```yaml
+modules: ["User Enhancement", "Branch"]
+purpose: "Establish user management and multi-branch architecture"
+deliverables:
+  - "Multi-branch user authentication system"
+  - "Branch configuration and markup management"
+  - "AdminController pattern implemented"
+  - "Basic admin interfaces with Bootstrap 5"
+critical_path: "These modules are required by all others"
+```
+
+### **Phase 2: Business Core (5-6 weeks)**
+```yaml
+modules: ["Customer", "Shipment"]
+purpose: "Implement core shipping business functionality"
+deliverables:
+  - "Centralized customer management system"
+  - "Complete 7-step shipment creation workflow"
+  - "Branch-isolated operations"
+  - "Basic shipment management"
+critical_path: "Core business value delivery"
+```
+
+### **Phase 3: Integration (5-6 weeks)**
+```yaml
+modules: ["Shipper", "Product"]
+purpose: "External API integration and product management"
+deliverables:
+  - "Thailand Post, J&T, Flash Express integrations"
+  - "Real-time quotes and label generation"
+  - "Product categories and add-on services"
+  - "Complete shipping workflow"
+critical_path: "External service integration"
+```
+
+### **Phase 4: Compliance (2-3 weeks)**
+```yaml
+modules: ["Audit"]
+purpose: "Compliance and audit trail implementation"
+deliverables:
+  - "Complete audit trail system"
+  - "Compliance reporting"
+  - "Security monitoring"
+  - "Regulatory compliance features"
+critical_path: "Business compliance requirements"
+```
+
+## 🔗 **MODULE DEPENDENCY MATRIX:**
+
+```yaml
+dependency_order:
+  level_1: ["User"] # Foundation - no dependencies
+  level_2: ["Branch"] # Depends on User
+  level_3: ["Customer", "Shipper", "Product"] # Depends on User + Branch
+  level_4: ["Shipment"] # Depends on Customer + Shipper + Product
+  level_5: ["Audit"] # Depends on all others
+
+development_sequence:
+  phase_1: ["User", "Branch"]
+  phase_2: ["Customer", "Shipment"] # Start Shipment after Customer basics
+  phase_3: ["Shipper", "Product"] # Can develop in parallel
+  phase_4: ["Audit"] # Implement after core business logic
+```
+
+## 🎯 **TECHNOLOGY CONSISTENCY ACROSS MODULES:**
+
+### **Enforced Standards:**
+```yaml
+backend: "Laravel 8.12 with nwidart/laravel-modules"
+frontend: "Blade templates + jQuery"
+database: "MariaDB with simple indexing"
+ui_framework: "Bootstrap 5"
+admin_tables: "DataTables for all admin interfaces"
+controller_naming: "AdminController pattern STRICTLY ENFORCED"
+repository_pattern: "Interface-based repositories"
+```
+
+### **Module Generation Approach:**
+```yaml
+generation_tool: "dev/module-framework"
+base_template: "Follow existing User module architecture"
+consistency_requirements:
+  - "Apply finalized technology stack to all modules"
+  - "STRICT AdminController pattern enforcement"
+  - "MariaDB with simple indexing strategy"
+  - "Bootstrap 5 + DataTables + jQuery across all modules"
+  - "Repository pattern with interface contracts"
+```
+
+## ✅ **NEXT STEP AFTER YOUR CONFIRMATION:**
+
+**After you confirm this module breakdown, I will:**
+
+1. **Generate Individual Module Requirements** for each module using `dev/module-framework`
+2. **Create detailed module-requirements-basic.yaml** for each of the 7 modules
+3. **Follow your technology stack decisions** (Laravel 8.12, Blade + jQuery, MariaDB, Bootstrap 5)
+4. **Implement AdminController naming pattern** strictly
+5. **Maintain consistency** with your finalized architecture
+
+---
+
+**STATUS:** ✅ MODULE BREAKDOWN COMPLETE - AWAITING USER CONFIRMATION
+**READY FOR:** Individual Module Requirements Generation
+
+## 💬 **YOUR CONFIRMATION NEEDED:**
+
+```yaml
+module_list_approval: ""  # Do you approve this 7-module breakdown?
+development_phases_approval: ""  # Do the 4 development phases make sense?
+timeline_approval: ""  # Are the 16-20 week estimates realistic?
+priority_approval: ""  # Do module priorities match your business needs?
+technology_consistency_approval: ""  # Confirm technology stack across all modules?
+
+# Type "CONFIRMED" when ready for individual module requirements generation
+overall_breakdown_approval: ""
+```
+
+**คำสรุป**: รายการ 7 modules สำหรับ ShipCentral พร้อมแผนพัฒนา 4 phases ใน 16-20 สัปดาห์ ตามเทคโนโลยีที่คุณเลือกไว้ 🚀 

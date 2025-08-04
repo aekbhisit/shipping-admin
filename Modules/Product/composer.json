@@ -1,0 +1,22 @@
+{
+    "name": "nwidart/product",
+    "description": "Product Management Module for Laravel",
+    "type": "laravel-module",
+    "license": "MIT",
+    "require": {
+        "php": "^8.0",
+        "nwidart/laravel-modules": "^9.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Modules\\Product\\": ""
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Modules\\Product\\Providers\\ProductServiceProvider"
+            ]
+        }
+    }
+} 
